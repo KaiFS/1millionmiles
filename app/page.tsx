@@ -263,10 +263,10 @@ export default function Dashboard() {
             <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: 1.5, fontWeight: 500, whiteSpace: 'nowrap' }}>That&apos;s equivalent to</div>
               {[
-                { val: Math.round(totalMiles / 26.2).toLocaleString(), label: 'marathons' },
+                { val: Math.floor(totalMiles / 26.2).toLocaleString(), label: 'marathons' },
                 { val: (totalMiles / 24901 * 14).toFixed(1), label: 'laps of Earth' },
                 { val: (totalMiles / 238855 * 100).toFixed(3) + '%', label: 'to the Moon' },
-                { val: Math.round(totalMiles / 303).toLocaleString(), label: "Land's End → John o'Groats" },
+                { val: Math.floor(totalMiles / 303).toLocaleString(), label: "Land's End → John o'Groats" },
               ].map((e, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
                   <span style={{ fontFamily: "'Bebas Neue'", fontSize: 26, color: '#ED8B00' }}>{e.val}</span>
