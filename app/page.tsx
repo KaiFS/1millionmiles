@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 
 const GOAL = 1_000_000
+const KM_TO_MILES = 0.621371
 const TRUSTS = [
   'Leeds Teaching Hospitals NHS Trust',
   "Guy's and St Thomas' NHS Foundation Trust",
@@ -40,6 +41,8 @@ type Stats = {
   trusts: { name: string; miles: number }[]
   recent: Submission[]
 }
+
+type DistanceUnit = 'MI' | 'KM'
 
 function useCountUp(target: number, duration = 2000) {
   const [count, setCount] = useState(0)
@@ -100,26 +103,56 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', trust: '', activity_type: '', distance_miles: '' })
+  const [daysRemaining] = useState(() => {
+    const today = new Date()
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000)
+    return 365 - dayOfYear
+  })
+  const [form, setForm] = useState({
+    name: '',
+    trust: '',
+    activity_type: '',
+    distance_miles: '',
+    distance_unit: 'MI' as DistanceUnit,
+  })
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [formError, setFormError] = useState('')
 
-  const fetchStats = useCallback(async () => {
-    const res = await fetch('/api/stats')
-    const data = await res.json()
-    setStats(data)
-    setLoading(false)
-  }, [])
-
   useEffect(() => {
-    fetchStats()
+    let active = true
+
+    const loadStats = async () => {
+      const res = await fetch('/api/stats')
+      const data = await res.json()
+
+      if (!active) return
+
+      setStats(data)
+      setLoading(false)
+    }
+
+    void loadStats()
+
     const channel = supabase
       .channel('miles_changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'miles_submissions' }, () => fetchStats())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'miles_submissions' }, () => {
+        void loadStats()
+      })
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [fetchStats])
+
+    return () => {
+      active = false
+      supabase.removeChannel(channel)
+    }
+  }, [])
+
+  const enteredDistance = Number(form.distance_miles)
+  const convertedMiles = Number.isFinite(enteredDistance)
+    ? form.distance_unit === 'KM'
+      ? enteredDistance * KM_TO_MILES
+      : enteredDistance
+    : 0
 
   const handleSubmit = async () => {
     setFormError('')
@@ -139,7 +172,7 @@ export default function Dashboard() {
       setTimeout(() => {
         setShowForm(false)
         setSubmitted(false)
-        setForm({ name: '', trust: '', activity_type: '', distance_miles: '' })
+        setForm({ name: '', trust: '', activity_type: '', distance_miles: '', distance_unit: 'MI' })
       }, 2500)
     } else {
       const d = await res.json()
@@ -150,8 +183,6 @@ export default function Dashboard() {
   const totalMiles = stats?.totalMiles ?? 0
   const pct = Math.min((totalMiles / GOAL) * 100, 100)
   const animatedMiles = useCountUp(totalMiles, 2000)
-  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
-  const daysRemaining = 365 - dayOfYear
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif", background: '#0a0f1e', minHeight: '100vh', color: '#fff' }}>
@@ -246,7 +277,7 @@ export default function Dashboard() {
             { icon: '👥', label: 'Participants', value: loading ? '—' : (stats?.participantCount ?? 0).toLocaleString(), sub: 'NHS staff' },
             { icon: '🎯', label: 'Miles to Go', value: loading ? '—' : Math.max(0, GOAL - totalMiles).toLocaleString(), sub: 'remaining' },
             { icon: '📅', label: 'Days Left', value: daysRemaining.toString(), sub: 'in 2025' },
-            { icon: '📈', label: 'Needed / Day', value: loading ? '—' : Math.ceil(Math.max(0, GOAL - totalMiles) / Math.max(daysRemaining, 1)).toLocaleString(), sub: 'to hit goal' },
+            { icon: '📈', label: 'Miles Needed / Day', value: loading ? '—' : Math.ceil(Math.max(0, GOAL - totalMiles) / Math.max(daysRemaining, 1)).toLocaleString(), sub: 'to hit goal' },
           ].map((s, i) => (
             <div key={i} className="card" style={{ padding: '18px 20px' }}>
               <div style={{ fontSize: 20, marginBottom: 8 }}>{s.icon}</div>
@@ -430,8 +461,32 @@ export default function Dashboard() {
                     </select>
                   </div>
                   <div>
-                    <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Distance (miles)</label>
-                    <input className="field" type="number" placeholder="e.g. 6.2" min="0.1" max="200" step="0.1" value={form.distance_miles} onChange={e => setForm({ ...form, distance_miles: e.target.value })} />
+                    <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Distance</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 110px', gap: 10 }}>
+                      <input
+                        className="field"
+                        type="number"
+                        placeholder={form.distance_unit === 'KM' ? 'e.g. 10' : 'e.g. 6.2'}
+                        min="0.1"
+                        max={form.distance_unit === 'KM' ? '321.9' : '200'}
+                        step="0.1"
+                        value={form.distance_miles}
+                        onChange={e => setForm({ ...form, distance_miles: e.target.value })}
+                      />
+                      <select
+                        className="field"
+                        value={form.distance_unit}
+                        onChange={e => setForm({ ...form, distance_unit: e.target.value as DistanceUnit })}
+                      >
+                        <option value="MI">MI</option>
+                        <option value="KM">KM</option>
+                      </select>
+                    </div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', marginTop: 6 }}>
+                      {form.distance_unit === 'KM'
+                        ? `Stored as ${convertedMiles > 0 ? convertedMiles.toFixed(2) : '0.00'} mi on the leaderboard.`
+                        : 'Leaderboard totals stay in miles.'}
+                    </div>
                   </div>
                   {formError && <div style={{ fontSize: 13, color: '#ff6b6b', padding: '8px 12px', background: 'rgba(255,107,107,0.1)', borderRadius: 6 }}>{formError}</div>}
                   <button className="amber-btn" style={{ width: '100%', padding: 15, marginTop: 4 }} onClick={handleSubmit} disabled={submitting}>
