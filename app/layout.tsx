@@ -1,14 +1,38 @@
+import './globals.css'
 import type { Metadata } from 'next'
+import { Bebas_Neue, DM_Mono, DM_Sans } from 'next/font/google'
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm-sans',
+})
+
+const bebasNeue = Bebas_Neue({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-bebas-neue',
+})
+
+const dmMono = DM_Mono({
+  weight: ['400', '500'],
+  subsets: ['latin'],
+  variable: '--font-dm-mono',
+})
 
 export const metadata: Metadata = {
-  title: 'NHS Million Miles Challenge 2025',
-  description: 'NHS staff collectively running, cycling and walking one million miles in 2025.',
+  title: 'NHS Million Miles Challenge 2026',
+  description: 'NHS staff collectively running, cycling and walking one million miles in 2026.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, background: '#0a0f1e' }}>{children}</body>
+      <body
+        className={`${dmSans.variable} ${bebasNeue.variable} ${dmMono.variable}`}
+        style={{ margin: 0, padding: 0, background: '#0a0f1e' }}
+      >
+        {children}
+      </body>
     </html>
   )
 }

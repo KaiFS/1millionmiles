@@ -1,0 +1,69 @@
+import type { User } from '@supabase/supabase-js'
+import type { DistanceUnit } from '@/lib/challenge'
+
+export type Submission = {
+  name: string
+  trust: string
+  activity_type: string
+  distance_miles: number
+  created_at: string
+}
+
+export type Stats = {
+  totalMiles: number
+  participantCount: number
+  leaderboard: { name: string; miles: number; trust: string }[]
+  trusts: { name: string; miles: number }[]
+  recent: Submission[]
+}
+
+export type ProofItem = {
+  submission_id: string
+  name: string
+  trust: string
+  activity_type: string
+  distance_miles: number
+  created_at: string
+  proof_uploaded_at: string
+  proof_url: string
+}
+
+export type DashboardFormState = {
+  name: string
+  trust: string
+  activity_type: string
+  distance_miles: string
+  distance_unit: DistanceUnit
+}
+
+export type DashboardState = {
+  stats: Stats | null
+  loading: boolean
+  showForm: boolean
+  setShowForm: (value: boolean) => void
+  daysRemaining: number
+  form: DashboardFormState
+  setFormField: <K extends keyof DashboardFormState>(field: K, value: DashboardFormState[K]) => void
+  proofFile: File | null
+  submitting: boolean
+  submitted: boolean
+  submitWarning: string
+  formError: string
+  user: User | null
+  authLoading: boolean
+  authBusy: boolean
+  authError: string
+  proofs: ProofItem[]
+  proofsLoading: boolean
+  selectedProof: ProofItem | null
+  setSelectedProof: (proof: ProofItem | null) => void
+  enteredDistance: number
+  convertedMiles: number
+  totalMiles: number
+  pct: number
+  userLabel: string
+  handleGoogleSignIn: () => Promise<void>
+  handleSignOut: () => Promise<void>
+  handleProofSelected: (event: React.ChangeEvent<HTMLInputElement>) => void
+  handleSubmit: () => Promise<void>
+}

@@ -1,37 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a Next.js 16 app for the NHS Million Miles challenge leaderboard.
 
-## Getting Started
+## Local Development
 
-First, run the development server:
+Run the app with:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app expects these environment variables in `.env.local`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Supabase Setup
 
-## Learn More
+Run the SQL in `supabase-schema.sql`. It creates:
 
-To learn more about Next.js, take a look at the following resources:
+- `miles_submissions` for the public leaderboard
+- `submission_proofs` for authenticated screenshot proof metadata
+- a private Storage bucket called `activity-proofs`
+- RLS policies for public leaderboard reads and authenticated proof access
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Google Login Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+You need to finish the OAuth setup in Supabase and Google Cloud:
 
-## Deploy on Vercel
+1. In Google Cloud, create an OAuth client for the app.
+2. In Supabase Auth, enable the Google provider and paste the Google client ID and secret.
+3. Add these redirect URLs in Supabase Auth and Google Cloud:
+   - `http://localhost:3000/auth/callback`
+   - your production URL with `/auth/callback`
+4. In Supabase Auth URL settings, make sure the site URL matches your local or production host.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## What This Adds
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# 1millionmiles
+- Public visitors can still view the leaderboard and submit miles.
+- Signed-in users can sign in with Google.
+- Signed-in users can attach an optional screenshot proof when logging miles.
+- Signed-in users can browse the authenticated proof gallery.
+
+## Verification
+
+The current implementation passes:
+
+```bash
+npm run lint
+npm run build
+```
