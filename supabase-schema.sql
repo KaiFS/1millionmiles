@@ -3,6 +3,14 @@
 
 create extension if not exists "pgcrypto";
 
+create table if not exists public.user_profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  first_name text not null check (char_length(btrim(first_name)) > 0),
+  last_name text not null check (char_length(btrim(last_name)) > 0),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
 -- Public leaderboard data
 create table if not exists public.miles_submissions (
   id uuid default gen_random_uuid() primary key,
@@ -29,6 +37,24 @@ create table if not exists public.submission_proofs (
 
 alter table public.miles_submissions enable row level security;
 alter table public.submission_proofs enable row level security;
+alter table public.user_profiles enable row level security;
+
+drop policy if exists "Users can read own profile" on public.user_profiles;
+drop policy if exists "Users can insert own profile" on public.user_profiles;
+drop policy if exists "Users can update own profile" on public.user_profiles;
+
+create policy "Users can read own profile"
+  on public.user_profiles for select to authenticated
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own profile"
+  on public.user_profiles for insert to authenticated
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own profile"
+  on public.user_profiles for update to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 drop policy if exists "Anyone can read submissions" on public.miles_submissions;
 drop policy if exists "Anyone can insert submissions" on public.miles_submissions;
@@ -121,3 +147,21 @@ create index if not exists idx_submissions_trust on public.miles_submissions (tr
 create index if not exists idx_submissions_user_id on public.miles_submissions (user_id);
 create index if not exists idx_submission_proofs_created_at on public.submission_proofs (created_at desc);
 create index if not exists idx_submission_proofs_user_id on public.submission_proofs (user_id);
+create index if not exists idx_user_profiles_updated_at on public.user_profiles (updated_at desc);
+
+create or replace function public.set_user_profiles_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists set_user_profiles_updated_at on public.user_profiles;
+
+create trigger set_user_profiles_updated_at
+before update on public.user_profiles
+for each row
+execute function public.set_user_profiles_updated_at();

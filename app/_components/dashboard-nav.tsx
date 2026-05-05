@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 type DashboardNavProps = {
   userLabel: string
   signedIn: boolean
@@ -36,12 +38,18 @@ export default function DashboardNav({
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ background: '#005EB8', borderRadius: 8, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <span style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 15, letterSpacing: 1 }}>NHS</span>
+        <div style={{ position: 'relative', width: 34, height: 34, flexShrink: 0 }}>
+          <Image
+            src="/evelina.jpg"
+            alt="Evelina London Children's Hospital logo"
+            fill
+            sizes="34px"
+            style={{ borderRadius: 8, objectFit: 'cover' }}
+          />
         </div>
         <div>
-          <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 18, letterSpacing: 2 }}>MILLION MILES</div>
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase', marginTop: -2 }}>Staff Challenge 2026</div>
+          <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 18, letterSpacing: 2 }}>The One Million Miles Challenge</div>
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, textTransform: 'uppercase', marginTop: -2 }}>In Support Of Evelina London</div>
         </div>
       </div>
       <div className="nav-actions" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

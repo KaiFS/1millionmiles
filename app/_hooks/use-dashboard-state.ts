@@ -10,7 +10,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { getUserDisplayName } from '@/lib/user-display'
 import { GOAL } from '@/app/_lib/dashboard-constants'
-import type { DashboardFormState, DashboardState, ProofItem, Stats } from '@/app/_lib/dashboard-types'
+import type { DashboardFormState, DashboardState, ProofItem, Stats, UserProfile } from '@/app/_lib/dashboard-types'
 
 const DEFAULT_FORM: DashboardFormState = {
   name: '',
@@ -21,14 +21,11 @@ const DEFAULT_FORM: DashboardFormState = {
 }
 
 export function useDashboardState(): DashboardState {
+  const [isHydrated, setIsHydrated] = useState(false)
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [daysRemaining] = useState(() => {
-    const today = new Date()
-    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000)
-    return 365 - dayOfYear
-  })
+  const [daysRemaining, setDaysRemaining] = useState(365)
   const [form, setForm] = useState<DashboardFormState>(DEFAULT_FORM)
   const [proofFile, setProofFile] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -36,6 +33,11 @@ export function useDashboardState(): DashboardState {
   const [submitWarning, setSubmitWarning] = useState('')
   const [formError, setFormError] = useState('')
   const [user, setUser] = useState<User | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [profileError, setProfileError] = useState('')
+  const [showProfilePrompt, setShowProfilePrompt] = useState(false)
   const [authLoading, setAuthLoading] = useState(true)
   const [authBusy, setAuthBusy] = useState(false)
   const [authError, setAuthError] = useState('')
@@ -43,6 +45,10 @@ export function useDashboardState(): DashboardState {
   const [proofsLoading, setProofsLoading] = useState(false)
   const [proofRefreshKey, setProofRefreshKey] = useState(0)
   const [selectedProof, setSelectedProof] = useState<ProofItem | null>(null)
+
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -60,6 +66,40 @@ export function useDashboardState(): DashboardState {
       }
     }
 
+    const loadProfile = async (currentUser: User | null) => {
+      if (!currentUser) {
+        if (!active) return
+        setProfile(null)
+        setProfileLoading(false)
+        setProfileError('')
+        setShowProfilePrompt(false)
+        return
+      }
+
+      setProfileLoading(true)
+
+      try {
+        const response = await fetch('/api/profile')
+        const data = await response.json()
+
+        if (!active) return
+
+        if (!response.ok) {
+          setProfile(null)
+          setShowProfilePrompt(false)
+          setProfileError(data.error ?? 'Could not load your profile.')
+          return
+        }
+
+        const nextProfile = data.profile ?? null
+        setProfile(nextProfile)
+        setProfileError('')
+        setShowProfilePrompt(!nextProfile)
+      } finally {
+        if (active) setProfileLoading(false)
+      }
+    }
+
     const syncUser = async () => {
       const {
         data: { user: currentUser },
@@ -68,6 +108,7 @@ export function useDashboardState(): DashboardState {
       if (!active) return
 
       setUser(currentUser ?? null)
+      void loadProfile(currentUser ?? null)
       setAuthLoading(false)
     }
 
@@ -92,7 +133,9 @@ export function useDashboardState(): DashboardState {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!active) return
-      setUser(session?.user ?? null)
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
+      void loadProfile(currentUser)
       setAuthLoading(false)
       setAuthBusy(false)
       setAuthError('')
@@ -103,6 +146,12 @@ export function useDashboardState(): DashboardState {
       subscription.unsubscribe()
       supabase.removeChannel(channel)
     }
+  }, [])
+
+  useEffect(() => {
+    const today = new Date()
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000)
+    setDaysRemaining(365 - dayOfYear)
   }, [])
 
   useEffect(() => {
@@ -161,16 +210,14 @@ export function useDashboardState(): DashboardState {
   }, [selectedProof])
 
   useEffect(() => {
-    if (!user) return
-
-    const suggestedName = getUserDisplayName(user)
+    const suggestedName = getUserDisplayName(user, profile)
     if (!suggestedName) return
 
     setForm(currentForm => {
       if (currentForm.name.trim()) return currentForm
       return { ...currentForm, name: suggestedName }
     })
-  }, [user])
+  }, [user, profile])
 
   const enteredDistance = Number(form.distance_miles)
   const convertedMiles = Number.isFinite(enteredDistance)
@@ -207,7 +254,40 @@ export function useDashboardState(): DashboardState {
       return
     }
 
+    setProfile(null)
+    setShowProfilePrompt(false)
     setProofs([])
+  }
+
+  const handleProfileSave = async (firstName: string, lastName: string) => {
+    setProfileSaving(true)
+    setProfileError('')
+
+    const response = await fetch('/api/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ firstName, lastName }),
+    })
+
+    const data = await response.json()
+    setProfileSaving(false)
+
+    if (!response.ok) {
+      setProfileError(data.error ?? 'Could not save your profile.')
+      return
+    }
+
+    const nextProfile = data.profile as UserProfile
+    const fullName = `${nextProfile.first_name} ${nextProfile.last_name}`.trim()
+    setProfile(nextProfile)
+    setShowProfilePrompt(false)
+    setProfileError('')
+    setForm(currentForm => ({
+      ...currentForm,
+      name: fullName,
+    }))
   }
 
   const handleProofSelected = (event: ChangeEvent<HTMLInputElement>) => {
@@ -239,6 +319,12 @@ export function useDashboardState(): DashboardState {
   const handleSubmit = async () => {
     setFormError('')
     setSubmitWarning('')
+
+    if (user && !profile) {
+      setFormError('Please complete your profile before logging miles.')
+      setShowProfilePrompt(true)
+      return
+    }
 
     if (!form.name || !form.trust || !form.activity_type || !form.distance_miles) {
       setFormError('Please fill in all fields.')
@@ -288,7 +374,7 @@ export function useDashboardState(): DashboardState {
         setProofFile(null)
         setForm({
           ...DEFAULT_FORM,
-          name: user ? getUserDisplayName(user) : '',
+          name: getUserDisplayName(user, profile),
         })
       }, 2500)
 
@@ -300,7 +386,7 @@ export function useDashboardState(): DashboardState {
 
   const totalMiles = stats?.totalMiles ?? 0
   const pct = Math.min((totalMiles / GOAL) * 100, 100)
-  const userLabel = getUserDisplayName(user)
+  const userLabel = getUserDisplayName(user, profile)
 
   const setFormField: DashboardState['setFormField'] = (field, value) => {
     setForm(currentForm => ({
@@ -310,6 +396,7 @@ export function useDashboardState(): DashboardState {
   }
 
   return {
+    isHydrated,
     stats,
     loading,
     showForm,
@@ -323,6 +410,11 @@ export function useDashboardState(): DashboardState {
     submitWarning,
     formError,
     user,
+    profile,
+    profileLoading,
+    profileSaving,
+    profileError,
+    showProfilePrompt,
     authLoading,
     authBusy,
     authError,
@@ -337,6 +429,7 @@ export function useDashboardState(): DashboardState {
     userLabel,
     handleGoogleSignIn,
     handleSignOut,
+    handleProfileSave,
     handleProofSelected,
     handleSubmit,
   }

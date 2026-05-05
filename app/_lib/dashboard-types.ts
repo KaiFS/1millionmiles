@@ -28,6 +28,11 @@ export type ProofItem = {
   proof_url: string
 }
 
+export type UserProfile = {
+  first_name: string
+  last_name: string
+}
+
 export type DashboardFormState = {
   name: string
   trust: string
@@ -37,6 +42,7 @@ export type DashboardFormState = {
 }
 
 export type DashboardState = {
+  isHydrated: boolean
   stats: Stats | null
   loading: boolean
   showForm: boolean
@@ -50,6 +56,11 @@ export type DashboardState = {
   submitWarning: string
   formError: string
   user: User | null
+  profile: UserProfile | null
+  profileLoading: boolean
+  profileSaving: boolean
+  profileError: string
+  showProfilePrompt: boolean
   authLoading: boolean
   authBusy: boolean
   authError: string
@@ -64,6 +75,7 @@ export type DashboardState = {
   userLabel: string
   handleGoogleSignIn: () => Promise<void>
   handleSignOut: () => Promise<void>
+  handleProfileSave: (firstName: string, lastName: string) => Promise<void>
   handleProofSelected: (event: React.ChangeEvent<HTMLInputElement>) => void
   handleSubmit: () => Promise<void>
 }

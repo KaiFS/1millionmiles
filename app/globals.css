@@ -207,6 +207,10 @@ select.field option {
     grid-template-columns: 1fr !important;
   }
 
+  .mile-banner {
+    grid-template-columns: 1fr !important;
+  }
+
   .stats-grid {
     grid-template-columns: 1fr 1fr !important;
   }

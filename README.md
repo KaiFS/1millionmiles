@@ -1,10 +1,13 @@
-This is a Next.js 16 app for the NHS Million Miles challenge leaderboard.
+# The One Million Miles Challenge
+
+This is a Next.js 16 app for the One Million Miles Challenge, a charity fitness campaign supporting Evelina London.
 
 ## Local Development
 
-Run the app with:
+Install dependencies and run the app with:
 
 ```bash
+npm install
 npm run dev
 ```
 
@@ -15,18 +18,25 @@ NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
+You can copy the tracked example file to get started:
+
+```bash
+cp .env.example .env.local
+```
+
 ## Supabase Setup
 
 Run the SQL in `supabase-schema.sql`. It creates:
 
+- `user_profiles` so signed-in participants have a fixed leaderboard name
 - `miles_submissions` for the public leaderboard
 - `submission_proofs` for authenticated screenshot proof metadata
 - a private Storage bucket called `activity-proofs`
-- RLS policies for public leaderboard reads and authenticated proof access
+- RLS policies for public leaderboard reads, authenticated profile writes, and proof access
 
 ## Google Login Setup
 
-You need to finish the OAuth setup in Supabase and Google Cloud:
+You need to complete the OAuth setup in Supabase and Google Cloud:
 
 1. In Google Cloud, create an OAuth client for the app.
 2. In Supabase Auth, enable the Google provider and paste the Google client ID and secret.
@@ -35,16 +45,17 @@ You need to finish the OAuth setup in Supabase and Google Cloud:
    - your production URL with `/auth/callback`
 4. In Supabase Auth URL settings, make sure the site URL matches your local or production host.
 
-## What This Adds
+## Features
 
-- Public visitors can still view the leaderboard and submit miles.
-- Signed-in users can sign in with Google.
-- Signed-in users can attach an optional screenshot proof when logging miles.
-- Signed-in users can browse the authenticated proof gallery.
+- Public leaderboard with challenge progress, trust rankings, and recent activity.
+- Anonymous submissions for open participation.
+- Google sign-in for authenticated participants.
+- Profile-backed display names for signed-in users.
+- Optional screenshot proof uploads and an authenticated proof gallery.
 
 ## Verification
 
-The current implementation passes:
+The current working tree passes:
 
 ```bash
 npm run lint

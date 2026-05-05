@@ -10,6 +10,7 @@ type SubmitMilesModalProps = {
   proofFile: File | null
   convertedMiles: number
   signedIn: boolean
+  nameLocked: boolean
   submitting: boolean
   submitted: boolean
   submitWarning: string
@@ -25,6 +26,7 @@ export default function SubmitMilesModal({
   proofFile,
   convertedMiles,
   signedIn,
+  nameLocked,
   submitting,
   submitted,
   submitWarning,
@@ -57,7 +59,18 @@ export default function SubmitMilesModal({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
                 <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Your Name</label>
-                <input className="field" placeholder="e.g. Sarah Mitchell" value={form.name} onChange={event => onFieldChange('name', event.target.value)} />
+                <input
+                  className="field"
+                  placeholder="e.g. Sarah Mitchell"
+                  value={form.name}
+                  onChange={event => onFieldChange('name', event.target.value)}
+                  readOnly={nameLocked}
+                />
+                {nameLocked && (
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', marginTop: 6 }}>
+                    Your signed-in profile name is used automatically on every submission.
+                  </div>
+                )}
               </div>
               <div>
                 <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>NHS Trust</label>

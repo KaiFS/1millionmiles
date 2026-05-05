@@ -26,7 +26,23 @@ export async function POST(req: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  const name = user ? getUserDisplayName(user) : providedName
+  let profile = null
+
+  if (user) {
+    const { data: profileData, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('first_name, last_name')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (profileError) {
+      return NextResponse.json({ error: profileError.message }, { status: 500 })
+    }
+
+    profile = profileData
+  }
+
+  const name = user ? getUserDisplayName(user, profile) : providedName
 
   if (!name || !trust || !activity_type || !Number.isFinite(rawDistance)) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })

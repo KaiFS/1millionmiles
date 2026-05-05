@@ -20,8 +20,8 @@ const dmMono = DM_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'NHS Million Miles Challenge 2026',
-  description: 'NHS staff collectively running, cycling and walking one million miles in 2026.',
+  title: 'The One Million Miles Challenge',
+  description: 'The One Million Miles Challenge, in support of Evelina London.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

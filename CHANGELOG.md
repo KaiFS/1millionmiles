@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-05
+
+### Added
+- Added a `user_profiles` flow so authenticated participants save a first and last name before submitting miles.
+- Added an authenticated profile API for reading and updating saved participant names.
+- Added a public `.env.example` for the required Supabase environment variables.
+- Added updated project imagery and an `app/icon.jpg` app icon for the Evelina London branding.
+
+### Changed
+- Rebranded the public-facing app copy and metadata around The One Million Miles Challenge in support of Evelina London.
+- Updated signed-in submissions to use the saved profile name consistently instead of an editable free-text name field.
+- Refreshed the README and repository metadata for public sharing.
+- Replaced the old favicon asset with the new app icon image.
+
+### Fixed
+- Fixed hydration mismatch issues around the first-render auth state.
+- Fixed Next.js image warnings for the Evelina logo usage.
+
 ## [0.2.0] - 2026-04-11
 
 ### Added
@@ -30,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Public miles submission flow backed by Supabase.
 - Aggregate stats, trust rankings, and recent activity feed for challenge progress tracking.
 
-[Unreleased]: https://github.com/KaiFS/1millionmiles/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/KaiFS/1millionmiles/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/KaiFS/1millionmiles/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/KaiFS/1millionmiles/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/KaiFS/1millionmiles/releases/tag/v0.1.0
