@@ -129,20 +129,6 @@ export default function DashboardSummary({
           </div>
         )}
       </div>
-
-      <div className="card fade-in" style={{ padding: '18px 22px', marginBottom: 24, background: 'rgba(237,139,0,0.08)', borderColor: 'rgba(237,139,0,0.25)' }}>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div>
-            <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 18, letterSpacing: 2 }}>Need to convert miles?</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>
-              Use our quick calculator to convert between miles and kilometres.
-            </div>
-          </div>
-          <button className="amber-btn" style={{ padding: '10px 18px' }} onClick={onOpenForm}>
-            Open Calculator
-          </button>
-        </div>
-      </div>
     </>
   )
 }
