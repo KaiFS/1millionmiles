@@ -1,7 +1,6 @@
 'use client'
 
 import { KM_TO_MILES, MAX_PROOF_FILE_BYTES } from '@/lib/challenge'
-import { TRUSTS } from '@/app/_lib/dashboard-constants'
 import type { DashboardFormState } from '@/app/_lib/dashboard-types'
 import { formatFileSize } from '@/app/_lib/dashboard-utils'
 
@@ -71,13 +70,6 @@ export default function SubmitMilesModal({
                     Your signed-in profile name is used automatically on every submission.
                   </div>
                 )}
-              </div>
-              <div>
-                <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>NHS Trust</label>
-                <select className="field" value={form.trust} onChange={event => onFieldChange('trust', event.target.value)}>
-                  <option value="">Select your Trust...</option>
-                  {TRUSTS.map(trustName => <option key={trustName} value={trustName}>{trustName}</option>)}
-                </select>
               </div>
               <div>
                 <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Activity</label>

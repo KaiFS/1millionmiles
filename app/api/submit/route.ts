@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const formData = await req.formData()
   const providedName = String(formData.get('name') ?? '').trim()
-  const trust = String(formData.get('trust') ?? '').trim()
+  const trust = String(formData.get('trust') ?? 'NHS Staff').trim()
   const activity_type = String(formData.get('activity_type') ?? '').trim()
   const distance_miles = String(formData.get('distance_miles') ?? '')
   const distance_unit = String(formData.get('distance_unit') ?? 'MI')
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
   const name = user ? getUserDisplayName(user, profile) : providedName
 
-  if (!name || !trust || !activity_type || !Number.isFinite(rawDistance)) {
+  if (!name || !activity_type || !Number.isFinite(rawDistance)) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
   }
 

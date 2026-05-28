@@ -35,7 +35,6 @@ export type UserProfile = {
 
 export type DashboardFormState = {
   name: string
-  trust: string
   activity_type: string
   distance_miles: string
   distance_unit: DistanceUnit

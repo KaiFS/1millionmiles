@@ -40,11 +40,12 @@ export default function DashboardNav({
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ position: 'relative', width: 34, height: 34, flexShrink: 0 }}>
           <Image
-            src="/evelina.jpg"
-            alt="Evelina London Children's Hospital logo"
+            src="/logo1million.png"
+            alt="One Million Miles Challenge logo"
             fill
             sizes="34px"
-            style={{ borderRadius: 8, objectFit: 'cover' }}
+            loading="eager"
+            style={{ borderRadius: 8, objectFit: 'contain' }}
           />
         </div>
         <div>
