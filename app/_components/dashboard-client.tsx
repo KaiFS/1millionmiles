@@ -87,12 +87,12 @@ export default function DashboardClient() {
               <div style={{ padding: 18, borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 18px 45px rgba(0,0,0,0.18)' }}>
                 <div style={{ position: 'relative', width: 'clamp(140px, 18vw, 180px)', aspectRatio: '1 / 1' }}>
                 <Image
-                  src="/evelina.jpg"
-                  alt="Evelina London Children's Hospital logo"
+                  src="/logo1million.png"
+                  alt="One Million Miles Challenge logo"
                   fill
                   loading="eager"
                   sizes="(max-width: 768px) 140px, 180px"
-                  style={{ display: 'block', borderRadius: 16, objectFit: 'cover' }}
+                  style={{ display: 'block', borderRadius: 16, objectFit: 'contain' }}
                 />
                 </div>
               </div>
@@ -102,13 +102,12 @@ export default function DashboardClient() {
       </div>
 
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>© 2026 NHS Million Miles Challenge</div>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>© 2026 One Million Miles Challenge</div>
         <div style={{ display: 'flex', gap: 18 }}>
-          {['About', 'Privacy', 'Contact'].map(linkLabel => (
-            <span key={linkLabel} style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}>
-              {linkLabel}
-            </span>
-          ))}
+          <a href="https://www.justgiving.com/page/onemillion-oneteam?utm_medium=FR&utm_source=CL" target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#ED8B00', cursor: 'pointer' }}>Donate via JustGiving →</a>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}>About</span>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}>Privacy</span>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}>Contact</span>
         </div>
       </div>
 

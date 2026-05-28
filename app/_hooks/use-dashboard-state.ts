@@ -14,7 +14,6 @@ import type { DashboardFormState, DashboardState, ProofItem, Stats, UserProfile 
 
 const DEFAULT_FORM: DashboardFormState = {
   name: '',
-  trust: '',
   activity_type: '',
   distance_miles: '',
   distance_unit: 'MI',
@@ -150,8 +149,9 @@ export function useDashboardState(): DashboardState {
 
   useEffect(() => {
     const today = new Date()
-    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000)
-    setDaysRemaining(365 - dayOfYear)
+    const challengeEnd = new Date('2027-06-01T00:00:00')
+    const diffDays = Math.ceil((challengeEnd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    setDaysRemaining(Math.max(0, diffDays))
   }, [])
 
   useEffect(() => {
@@ -326,7 +326,7 @@ export function useDashboardState(): DashboardState {
       return
     }
 
-    if (!form.name || !form.trust || !form.activity_type || !form.distance_miles) {
+    if (!form.name || !form.activity_type || !form.distance_miles) {
       setFormError('Please fill in all fields.')
       return
     }
@@ -343,7 +343,6 @@ export function useDashboardState(): DashboardState {
 
     const payload = new FormData()
     payload.set('name', form.name.trim())
-    payload.set('trust', form.trust)
     payload.set('activity_type', form.activity_type)
     payload.set('distance_miles', String(parseFloat(form.distance_miles)))
     payload.set('distance_unit', form.distance_unit)

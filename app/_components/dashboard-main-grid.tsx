@@ -1,8 +1,7 @@
 'use client'
 
-import { TRUST_COLORS } from '@/app/_lib/dashboard-constants'
 import type { Stats } from '@/app/_lib/dashboard-types'
-import { formatTrustName, initials, timeAgo } from '@/app/_lib/dashboard-utils'
+import { initials, timeAgo } from '@/app/_lib/dashboard-utils'
 
 type DashboardMainGridProps = {
   stats: Stats | null
@@ -44,9 +43,6 @@ export default function DashboardMainGrid({ stats, loading }: DashboardMainGridP
                     <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 4, height: 4, overflow: 'hidden' }}>
                       <div className="bar" style={{ width: `${barPct}%`, height: '100%', background: index === 0 ? '#ED8B00' : '#005EB8', borderRadius: 4 }} />
                     </div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {formatTrustName(participant.trust)}
-                    </div>
                   </div>
                 </div>
               )
@@ -56,33 +52,6 @@ export default function DashboardMainGrid({ stats, loading }: DashboardMainGridP
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <div className="card fade-in" style={{ padding: 24 }}>
-          <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 22, letterSpacing: 2, marginBottom: 4 }}>By NHS Trust</div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 18 }}>Top contributing trusts</div>
-          {loading ? (
-            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>Loading...</div>
-          ) : (stats?.trusts.length ?? 0) === 0 ? (
-            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>No data yet</div>
-          ) : (
-            stats?.trusts.map((trust, index) => {
-              const barPct = stats.trusts[0]?.miles ? (trust.miles / stats.trusts[0].miles) * 100 : 0
-              const color = TRUST_COLORS[trust.name] ?? `hsl(${index * 60 + 200},60%,45%)`
-
-              return (
-                <div key={trust.name} style={{ marginBottom: 14 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{formatTrustName(trust.name)}</span>
-                    <span style={{ fontFamily: 'var(--font-dm-mono), monospace', fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{trust.miles.toLocaleString()} mi</span>
-                  </div>
-                  <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 4, height: 6, overflow: 'hidden' }}>
-                    <div className="bar" style={{ width: `${barPct}%`, height: '100%', background: color, borderRadius: 4, opacity: 0.9 }} />
-                  </div>
-                </div>
-              )
-            })
-          )}
-        </div>
-
         <div className="card fade-in" style={{ padding: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
             <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 22, letterSpacing: 2 }}>Live Feed</div>
@@ -105,7 +74,6 @@ export default function DashboardMainGrid({ stats, loading }: DashboardMainGridP
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 500 }}>
                       {activity.name}
-                      <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 400, fontSize: 12 }}> · {formatTrustName(activity.trust)}</span>
                     </div>
                     <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{activity.activity_type}</div>
                   </div>
@@ -117,6 +85,45 @@ export default function DashboardMainGrid({ stats, loading }: DashboardMainGridP
               </div>
             ))
           )}
+        </div>
+
+        <div className="card fade-in" style={{ padding: 24, background: 'linear-gradient(135deg, rgba(237,139,0,0.12), rgba(0,94,184,0.08))', borderColor: 'rgba(237,139,0,0.3)' }}>
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 22, letterSpacing: 2, marginBottom: 8 }}>Support Our Challenge</div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
+              Every donation helps Evelina London Children&apos;s Hospital provide life-saving care to critically ill children.
+            </div>
+          </div>
+          <a
+            href="https://www.justgiving.com/page/onemillion-oneteam?utm_medium=FR&utm_source=CL"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'block',
+              textAlign: 'center',
+              padding: '16px 24px',
+              background: '#ED8B00',
+              color: '#fff',
+              borderRadius: 8,
+              fontFamily: 'var(--font-bebas-neue), sans-serif',
+              fontSize: 18,
+              letterSpacing: 1,
+              textDecoration: 'none',
+              fontWeight: 600,
+              boxShadow: '0 4px 12px rgba(237,139,0,0.3)',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+            }}
+            onMouseEnter={event => {
+              event.currentTarget.style.transform = 'scale(1.02)'
+              event.currentTarget.style.boxShadow = '0 6px 16px rgba(237,139,0,0.4)'
+            }}
+            onMouseLeave={event => {
+              event.currentTarget.style.transform = 'scale(1)'
+              event.currentTarget.style.boxShadow = '0 4px 12px rgba(237,139,0,0.3)'
+            }}
+          >
+            Donate Now →
+          </a>
         </div>
       </div>
     </div>
