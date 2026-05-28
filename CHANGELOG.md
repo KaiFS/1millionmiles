@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New logo for the challenge
 - JustGiving donation links added in the main grid and footer
 - Miles calculator quick access link added
-- Countdown timer updated to show days remaining until June 1st, 2027.
+- Countdown timer updated to show days remaining until June 1st, 2027
+- Prominent "Support Our Challenge" donation section placed above Live Feed in main grid
 
 ### Changed
 - Rebranded from "NHS Million Miles Challenge" to "One Million Miles Challenge".

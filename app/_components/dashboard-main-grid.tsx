@@ -52,41 +52,6 @@ export default function DashboardMainGrid({ stats, loading }: DashboardMainGridP
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <div className="card fade-in" style={{ padding: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-            <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 22, letterSpacing: 2 }}>Live Feed</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <div className="pulse" style={{ width: 6, height: 6, background: '#00c25a', borderRadius: '50%' }} />
-              <span style={{ fontSize: 11, color: '#00c25a', fontWeight: 500, letterSpacing: 1 }}>LIVE</span>
-            </div>
-          </div>
-          {loading ? (
-            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>Loading...</div>
-          ) : (stats?.recent.length ?? 0) === 0 ? (
-            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>No activity yet</div>
-          ) : (
-            stats?.recent.slice(0, 6).map((activity, index) => (
-              <div key={`${activity.name}-${activity.created_at}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 12, marginBottom: 12, borderBottom: index < 5 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,94,184,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
-                    {initials(activity.name)}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 500 }}>
-                      {activity.name}
-                    </div>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{activity.activity_type}</div>
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontFamily: 'var(--font-dm-mono), monospace', fontSize: 14, color: '#ED8B00' }}>+{activity.distance_miles}</div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>{timeAgo(activity.created_at)}</div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
         <div className="card fade-in" style={{ padding: 24, background: 'linear-gradient(135deg, rgba(237,139,0,0.12), rgba(0,94,184,0.08))', borderColor: 'rgba(237,139,0,0.3)' }}>
           <div style={{ textAlign: 'center', marginBottom: 20 }}>
             <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 22, letterSpacing: 2, marginBottom: 8 }}>Support Our Challenge</div>
@@ -124,6 +89,41 @@ export default function DashboardMainGrid({ stats, loading }: DashboardMainGridP
           >
             Donate Now →
           </a>
+        </div>
+
+        <div className="card fade-in" style={{ padding: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+            <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 22, letterSpacing: 2 }}>Live Feed</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div className="pulse" style={{ width: 6, height: 6, background: '#00c25a', borderRadius: '50%' }} />
+              <span style={{ fontSize: 11, color: '#00c25a', fontWeight: 500, letterSpacing: 1 }}>LIVE</span>
+            </div>
+          </div>
+          {loading ? (
+            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>Loading...</div>
+          ) : (stats?.recent.length ?? 0) === 0 ? (
+            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>No activity yet</div>
+          ) : (
+            stats?.recent.slice(0, 6).map((activity, index) => (
+              <div key={`${activity.name}-${activity.created_at}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 12, marginBottom: 12, borderBottom: index < 5 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,94,184,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
+                    {initials(activity.name)}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 500 }}>
+                      {activity.name}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{activity.activity_type}</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontFamily: 'var(--font-dm-mono), monospace', fontSize: 14, color: '#ED8B00' }}>+{activity.distance_miles}</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>{timeAgo(activity.created_at)}</div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
