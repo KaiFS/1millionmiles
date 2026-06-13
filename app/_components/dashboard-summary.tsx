@@ -1,6 +1,8 @@
 'use client'
 
 import { GOAL } from '@/app/_lib/dashboard-constants'
+import type { PersonalStats } from '@/app/_lib/dashboard-types'
+import PersonalStatsCard from '@/app/_components/personal-stats-card'
 import ProgressRing from '@/app/_components/progress-ring'
 
 type DashboardSummaryProps = {
@@ -11,10 +13,8 @@ type DashboardSummaryProps = {
   participantCount: number
   daysRemaining: number
   signedIn: boolean
-  authBusy: boolean
-  authLoading: boolean
-  onSignIn: () => void
-  onOpenForm: () => void
+  personalStats: PersonalStats | null
+  personalStatsLoading: boolean
 }
 
 export default function DashboardSummary({
@@ -25,10 +25,8 @@ export default function DashboardSummary({
   participantCount,
   daysRemaining,
   signedIn,
-  authBusy,
-  authLoading,
-  onSignIn,
-  onOpenForm,
+  personalStats,
+  personalStatsLoading,
 }: DashboardSummaryProps) {
   return (
     <>
@@ -102,33 +100,53 @@ export default function DashboardSummary({
         </div>
       )}
 
-      <div className="card fade-in" style={{ padding: '18px 22px', marginBottom: 24, background: 'linear-gradient(135deg, rgba(0,94,184,0.16), rgba(237,139,0,0.08))', borderColor: 'rgba(255,255,255,0.12)' }}>
-        {signedIn ? (
-          <div style={{ display: 'flex', gap: 18, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div>
-              <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 24, letterSpacing: 2 }}>Log Your Miles</div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginTop: 4 }}>
-                Signed-in users can attach an optional screenshot from Strava, Garmin, or another tracker and browse recent proof uploads.
-              </div>
-            </div>
-            <button className="amber-btn" style={{ padding: '12px 22px' }} onClick={onOpenForm}>
-              Log Your Miles
-            </button>
+      <div className="card fade-in" style={{ padding: 24, marginBottom: 24, background: 'linear-gradient(135deg, rgba(237,139,0,0.12), rgba(0,94,184,0.08))', borderColor: 'rgba(237,139,0,0.3)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 22, letterSpacing: 2, marginBottom: 8 }}>Support Our Challenge</div>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
+            Every donation helps Evelina London Children&apos;s Hospital provide life-saving care to critically ill children.
           </div>
-        ) : (
-          <div style={{ display: 'flex', gap: 18, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div>
-              <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 24, letterSpacing: 2 }}>Login To Share Miles</div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginTop: 4 }}>
-                Please login with Google to unlock the ability to view other members submissions.
-              </div>
-            </div>
-            <button className="amber-btn" onClick={onSignIn} disabled={authBusy || authLoading}>
-              {authBusy || authLoading ? 'Connecting...' : 'Continue With Google'}
-            </button>
-          </div>
-        )}
+        </div>
+        <a
+          href="https://www.justgiving.com/page/onemillion-oneteam?utm_medium=FR&utm_source=CL"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'block',
+            textAlign: 'center',
+            padding: '16px 24px',
+            background: '#ED8B00',
+            color: '#fff',
+            borderRadius: 8,
+            fontFamily: 'var(--font-bebas-neue), sans-serif',
+            fontSize: 18,
+            letterSpacing: 1,
+            textDecoration: 'none',
+            fontWeight: 600,
+            boxShadow: '0 4px 12px rgba(237,139,0,0.3)',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+          }}
+          onMouseEnter={event => {
+            event.currentTarget.style.transform = 'scale(1.02)'
+            event.currentTarget.style.boxShadow = '0 6px 16px rgba(237,139,0,0.4)'
+          }}
+          onMouseLeave={event => {
+            event.currentTarget.style.transform = 'scale(1)'
+            event.currentTarget.style.boxShadow = '0 4px 12px rgba(237,139,0,0.3)'
+          }}
+        >
+          Donate Now →
+        </a>
       </div>
+
+      {signedIn && (
+        <PersonalStatsCard
+          loading={personalStatsLoading}
+          totalMiles={personalStats?.totalMiles ?? null}
+          rank={personalStats?.rank ?? null}
+          totalParticipants={personalStats?.totalParticipants ?? 0}
+        />
+      )}
     </>
   )
 }

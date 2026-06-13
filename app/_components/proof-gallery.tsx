@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import type { ProofItem } from '@/app/_lib/dashboard-types'
-import { formatTrustName, timeAgo } from '@/app/_lib/dashboard-utils'
+import { timeAgo } from '@/app/_lib/dashboard-utils'
 
 type ProofGalleryProps = {
   proofs: ProofItem[]
@@ -64,7 +64,6 @@ export default function ProofGallery({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 8, marginBottom: 8 }}>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 600 }}>{proof.name}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', marginTop: 2 }}>{formatTrustName(proof.trust)}</div>
                   </div>
                   <div style={{ fontFamily: 'var(--font-dm-mono), monospace', fontSize: 13, color: '#ED8B00', whiteSpace: 'nowrap' }}>{proof.distance_miles} mi</div>
                 </div>
