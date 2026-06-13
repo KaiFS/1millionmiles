@@ -43,6 +43,8 @@ export default function ProofModal({ proof, onClose }: ProofModalProps) {
           <img
             src={proof.proof_url}
             alt={`${proof.name} ${proof.activity_type} proof full size`}
+            loading="lazy"
+            decoding="async"
             style={{ maxWidth: '100%', maxHeight: 'calc(100vh - 180px)', width: 'auto', height: 'auto', display: 'block', objectFit: 'contain' }}
           />
         </div>

@@ -17,6 +17,12 @@ export type Stats = {
   recent: Submission[]
 }
 
+export type PersonalStats = {
+  totalMiles: number | null
+  rank: number | null
+  totalParticipants: number
+}
+
 export type ProofItem = {
   submission_id: string
   name: string
@@ -65,8 +71,11 @@ export type DashboardState = {
   authError: string
   proofs: ProofItem[]
   proofsLoading: boolean
+  proofsLoaded: boolean
   selectedProof: ProofItem | null
   setSelectedProof: (proof: ProofItem | null) => void
+  personalStats: PersonalStats
+  personalStatsLoading: boolean
   enteredDistance: number
   convertedMiles: number
   totalMiles: number
@@ -76,5 +85,6 @@ export type DashboardState = {
   handleSignOut: () => Promise<void>
   handleProfileSave: (firstName: string, lastName: string) => Promise<void>
   handleProofSelected: (event: React.ChangeEvent<HTMLInputElement>) => void
+  loadProofs: () => Promise<void>
   handleSubmit: () => Promise<void>
 }

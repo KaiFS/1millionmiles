@@ -149,6 +149,90 @@ create index if not exists idx_submission_proofs_created_at on public.submission
 create index if not exists idx_submission_proofs_user_id on public.submission_proofs (user_id);
 create index if not exists idx_user_profiles_updated_at on public.user_profiles (updated_at desc);
 
+create or replace function public.get_dashboard_stats()
+returns jsonb
+language sql
+stable
+set search_path = public
+as $$
+  with user_totals as (
+    select
+      user_id,
+      (array_agg(name order by created_at desc))[1] as name,
+      (array_agg(trust order by created_at desc))[1] as trust,
+      sum(distance_miles)::numeric as miles
+    from public.miles_submissions
+    where user_id is not null
+    group by user_id
+  ),
+  trust_totals as (
+    select
+      trust as name,
+      round(sum(distance_miles))::integer as miles
+    from public.miles_submissions
+    group by trust
+    order by sum(distance_miles) desc
+    limit 5
+  ),
+  recent_submissions as (
+    select name, trust, activity_type, distance_miles, created_at
+    from public.miles_submissions
+    order by created_at desc
+    limit 10
+  )
+  select jsonb_build_object(
+    'totalMiles', coalesce((select round(sum(distance_miles)::numeric, 1) from public.miles_submissions), 0),
+    'participantCount', coalesce((select count(distinct user_id) from public.miles_submissions where user_id is not null), 0),
+    'leaderboard', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'name', name,
+        'miles', round(miles, 1),
+        'trust', trust
+      ) order by miles desc)
+      from (select * from user_totals order by miles desc limit 10) ranked_users
+    ), '[]'::jsonb),
+    'trusts', coalesce((
+      select jsonb_agg(jsonb_build_object('name', name, 'miles', miles) order by miles desc)
+      from trust_totals
+    ), '[]'::jsonb),
+    'recent', coalesce((
+      select jsonb_agg(to_jsonb(recent_submissions) order by created_at desc)
+      from recent_submissions
+    ), '[]'::jsonb)
+  );
+$$;
+
+create or replace function public.get_personal_stats(target_user_id uuid)
+returns jsonb
+language sql
+stable
+set search_path = public
+as $$
+  with user_totals as (
+    select
+      user_id,
+      sum(distance_miles)::numeric as miles
+    from public.miles_submissions
+    where user_id is not null
+    group by user_id
+  ),
+  ranked_users as (
+    select
+      user_id,
+      miles,
+      rank() over (order by miles desc) as rank
+    from user_totals
+  )
+  select jsonb_build_object(
+    'totalMiles', coalesce((select round(miles, 1) from ranked_users where user_id = target_user_id), 0),
+    'rank', (select rank from ranked_users where user_id = target_user_id),
+    'totalParticipants', coalesce((select count(*) from user_totals), 0)
+  );
+$$;
+
+grant execute on function public.get_dashboard_stats() to anon, authenticated;
+grant execute on function public.get_personal_stats(uuid) to authenticated;
+
 create or replace function public.set_user_profiles_updated_at()
 returns trigger
 language plpgsql

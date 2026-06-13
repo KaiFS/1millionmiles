@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import {
   convertToMiles,
   formatProofPath,
@@ -74,6 +75,7 @@ export async function POST(req: NextRequest) {
       .from(PROOF_BUCKET)
       .upload(proofPath, await proof.arrayBuffer(), {
         contentType: proof.type,
+        cacheControl: '604800',
         upsert: false,
       })
 
@@ -118,6 +120,10 @@ export async function POST(req: NextRequest) {
       }
     }
   }
+
+  revalidateTag('dashboard-stats', 'max')
+  revalidateTag('personal-stats', 'max')
+  if (user) revalidateTag(`personal-stats:${user.id}`, 'max')
 
   return NextResponse.json({ success: true, warning: proofUploadWarning })
 }
