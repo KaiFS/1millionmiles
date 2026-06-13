@@ -10,7 +10,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { getUserDisplayName } from '@/lib/user-display'
 import { GOAL } from '@/app/_lib/dashboard-constants'
-import type { DashboardFormState, DashboardState, PersonalStats, ProofItem, Stats, UserProfile } from '@/app/_lib/dashboard-types'
+import type { DashboardFormState, DashboardState, ProofItem, Stats, UserProfile } from '@/app/_lib/dashboard-types'
 
 const DEFAULT_FORM: DashboardFormState = {
   name: '',
@@ -45,8 +45,6 @@ export function useDashboardState(): DashboardState {
   const [proofsLoaded, setProofsLoaded] = useState(false)
   const [proofRefreshKey, setProofRefreshKey] = useState(0)
   const [selectedProof, setSelectedProof] = useState<ProofItem | null>(null)
-  const [personalStats, setPersonalStats] = useState<PersonalStats>({ totalMiles: null, rank: null, totalParticipants: 0 })
-  const [personalStatsLoading, setPersonalStatsLoading] = useState(true)
 
   useEffect(() => {
     setIsHydrated(true)
@@ -202,47 +200,6 @@ export function useDashboardState(): DashboardState {
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [selectedProof])
-
-  // Load personal stats when user is signed in
-  useEffect(() => {
-    let active = true
-
-    const loadPersonalStats = async () => {
-      if (!user) {
-        if (!active) return
-        setPersonalStats({ totalMiles: null, rank: null, totalParticipants: 0 })
-        setPersonalStatsLoading(false)
-        return
-      }
-
-      setPersonalStatsLoading(true)
-
-      try {
-        const response = await fetch('/api/me/stats')
-
-        if (!active) return
-
-        if (!response.ok) {
-          setPersonalStats({ totalMiles: null, rank: null, totalParticipants: 0 })
-          return
-        }
-
-        const data = await response.json()
-
-        if (!active) return
-
-        setPersonalStats(data)
-      } finally {
-        if (active) setPersonalStatsLoading(false)
-      }
-    }
-
-    void loadPersonalStats()
-
-    return () => {
-      active = false
-    }
-  }, [user])
 
   useEffect(() => {
     const suggestedName = getUserDisplayName(user, profile)
@@ -403,12 +360,6 @@ export function useDashboardState(): DashboardState {
       if (statsResponse.ok) {
         setStats(await statsResponse.json())
       }
-      if (user) {
-        const personalStatsResponse = await fetch('/api/me/stats')
-        if (personalStatsResponse.ok) {
-          setPersonalStats(await personalStatsResponse.json())
-        }
-      }
       setProofRefreshKey(current => current + 1)
 
       setTimeout(() => {
@@ -467,8 +418,6 @@ export function useDashboardState(): DashboardState {
     proofsLoaded,
     selectedProof,
     setSelectedProof,
-    personalStats,
-    personalStatsLoading,
     enteredDistance,
     convertedMiles,
     totalMiles,

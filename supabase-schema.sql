@@ -202,36 +202,7 @@ as $$
   );
 $$;
 
-create or replace function public.get_personal_stats(target_user_id uuid)
-returns jsonb
-language sql
-stable
-set search_path = public
-as $$
-  with user_totals as (
-    select
-      user_id,
-      sum(distance_miles)::numeric as miles
-    from public.miles_submissions
-    where user_id is not null
-    group by user_id
-  ),
-  ranked_users as (
-    select
-      user_id,
-      miles,
-      rank() over (order by miles desc) as rank
-    from user_totals
-  )
-  select jsonb_build_object(
-    'totalMiles', coalesce((select round(miles, 1) from ranked_users where user_id = target_user_id), 0),
-    'rank', (select rank from ranked_users where user_id = target_user_id),
-    'totalParticipants', coalesce((select count(*) from user_totals), 0)
-  );
-$$;
-
 grant execute on function public.get_dashboard_stats() to anon, authenticated;
-grant execute on function public.get_personal_stats(uuid) to authenticated;
 
 create or replace function public.set_user_profiles_updated_at()
 returns trigger
