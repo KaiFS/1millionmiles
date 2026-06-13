@@ -1,6 +1,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Bebas_Neue, DM_Mono, DM_Sans } from 'next/font/google'
+import Script from 'next/script'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -32,6 +33,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         style={{ margin: 0, padding: 0, background: '#0a0f1e' }}
       >
         {children}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5715351096287649"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   )
