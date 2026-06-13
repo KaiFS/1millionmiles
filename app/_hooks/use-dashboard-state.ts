@@ -46,7 +46,6 @@ export function useDashboardState(): DashboardState {
   const [personalStatsLoading, setPersonalStatsLoading] = useState(false)
   const [proofs, setProofs] = useState<ProofItem[]>([])
   const [proofsLoading, setProofsLoading] = useState(false)
-  const [proofsLoaded, setProofsLoaded] = useState(false)
   const [proofRefreshKey, setProofRefreshKey] = useState(0)
   const [selectedProof, setSelectedProof] = useState<ProofItem | null>(null)
 
@@ -181,12 +180,10 @@ export function useDashboardState(): DashboardState {
   const loadProofs = useCallback(async () => {
     if (!user) {
       setProofs([])
-      setProofsLoaded(false)
       setProofsLoading(false)
       return
     }
 
-    setProofsLoaded(true)
     setProofsLoading(true)
 
     try {
@@ -205,16 +202,15 @@ export function useDashboardState(): DashboardState {
   }, [user])
 
   useEffect(() => {
-    if (user || !proofsLoaded) return
+    if (user) return
     setProofs([])
-    setProofsLoaded(false)
     setProofsLoading(false)
-  }, [user, proofsLoaded])
+  }, [user])
 
   useEffect(() => {
-    if (!user || !proofsLoaded) return
+    if (!user) return
     void loadProofs()
-  }, [user, proofsLoaded, proofRefreshKey, loadProofs])
+  }, [user, proofRefreshKey, loadProofs])
 
   useEffect(() => {
     if (!selectedProof) return
@@ -469,7 +465,6 @@ export function useDashboardState(): DashboardState {
     personalStatsLoading,
     proofs,
     proofsLoading,
-    proofsLoaded,
     selectedProof,
     setSelectedProof,
     enteredDistance,
@@ -481,7 +476,6 @@ export function useDashboardState(): DashboardState {
     handleSignOut,
     handleProfileSave,
     handleProofSelected,
-    loadProofs,
     handleSubmit,
   }
 }
