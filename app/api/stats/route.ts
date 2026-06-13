@@ -7,12 +7,23 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'
 )
 
+const STATS_CACHE_SECONDS = 300
+const STATS_STALE_SECONDS = 900
+
+type DashboardStats = {
+  totalMiles: number
+  participantCount: number
+  leaderboard: { name: string; miles: number; trust: string }[]
+  trusts: { name: string; miles: number }[]
+  recent: { name: string; trust: string; activity_type: string; distance_miles: number; created_at: string }[]
+}
+
 const getStats = unstable_cache(
-  async () => {
+  async (): Promise<DashboardStats> => {
     const { data: rpcData, error: rpcError } = await supabase.rpc('get_dashboard_stats')
 
     if (!rpcError && rpcData) {
-      return rpcData
+      return rpcData as DashboardStats
     }
 
     const { data: allSubmissions } = await supabase
@@ -59,13 +70,13 @@ const getStats = unstable_cache(
     }
   },
   ['dashboard-stats'],
-  { revalidate: 60, tags: ['dashboard-stats'] }
+  { revalidate: STATS_CACHE_SECONDS, tags: ['dashboard-stats'] }
 )
 
 export async function GET() {
   return NextResponse.json(await getStats(), {
     headers: {
-      'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=300',
+      'Cache-Control': `public, max-age=${STATS_CACHE_SECONDS}, s-maxage=${STATS_CACHE_SECONDS}, stale-while-revalidate=${STATS_STALE_SECONDS}`,
     },
   })
 }

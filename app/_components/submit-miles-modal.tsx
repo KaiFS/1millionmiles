@@ -1,6 +1,6 @@
 'use client'
 
-import { KM_TO_MILES, MAX_PROOF_FILE_BYTES } from '@/lib/challenge'
+import { KM_TO_MILES, MAX_PROOF_FILE_BYTES, MAX_PROOF_SOURCE_FILE_BYTES } from '@/lib/challenge'
 import type { DashboardFormState } from '@/app/_lib/dashboard-types'
 import { formatFileSize } from '@/app/_lib/dashboard-utils'
 
@@ -111,11 +111,11 @@ export default function SubmitMilesModal({
                   <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Proof Screenshot (Optional)</label>
                   <input className="field" type="file" accept="image/jpeg,image/png,image/webp" onChange={onProofSelected} />
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', marginTop: 6 }}>
-                    Upload a screenshot from Strava, Garmin, Apple Fitness, or another tracker. PNG, JPG, or WEBP only, up to {formatFileSize(MAX_PROOF_FILE_BYTES)}.
+                    Upload a screenshot from Strava, Garmin, Apple Fitness, or another tracker. PNG, JPG, or WEBP only, up to {formatFileSize(MAX_PROOF_SOURCE_FILE_BYTES)} before compression.
                   </div>
                   {proofFile && (
                     <div style={{ marginTop: 8, padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
-                      {proofFile.name} · {formatFileSize(proofFile.size)}
+                      {proofFile.name} · upload size {formatFileSize(proofFile.size)}. Server limit is {formatFileSize(MAX_PROOF_FILE_BYTES)}.
                     </div>
                   )}
                 </div>

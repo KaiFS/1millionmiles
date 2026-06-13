@@ -5,6 +5,10 @@ export const MAX_DISTANCE_MILES = 200
 
 export const PROOF_BUCKET = 'activity-proofs'
 export const MAX_PROOF_FILE_BYTES = 10 * 1024 * 1024
+export const MAX_PROOF_SOURCE_FILE_BYTES = 20 * 1024 * 1024
+export const COMPRESSED_PROOF_MAX_DIMENSION = 1600
+export const COMPRESSED_PROOF_MIME_TYPE = 'image/webp'
+export const COMPRESSED_PROOF_QUALITY = 0.72
 
 export const ALLOWED_PROOF_MIME_TYPES = [
   'image/jpeg',
