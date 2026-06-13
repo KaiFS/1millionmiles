@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-06-13
+
+### Added
+- Proof images now upload to Cloudflare R2 (zero egress fees) instead of Supabase Storage, dramatically reducing storage egress costs.
+- Public R2 URLs stored directly in `submission_proofs.storage_path` for new uploads — no signing required.
+- One-off migration script (`scripts/migrate-proofs-to-r2.ts`) to move existing proof images from Supabase Storage to R2.
+- Backwards-compatible URL detection in `/api/proofs` — old Supabase paths fall back to signed URLs during migration.
+
+### Fixed
+- Post-submit activity feed and stats now bypass the browser HTTP cache (`cache: 'no-store'`), so updates appear immediately after logging miles.
+- NHS trust name in proof image modal now shows the full trust name, consistent with the rest of the app.
+
 ## [0.6.0] - 2026-06-13
 
 ### Added

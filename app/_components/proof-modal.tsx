@@ -3,7 +3,6 @@
 /* eslint-disable @next/next/no-img-element */
 
 import type { ProofItem } from '@/app/_lib/dashboard-types'
-import { formatTrustName } from '@/app/_lib/dashboard-utils'
 
 type ProofModalProps = {
   proof: ProofItem
@@ -28,7 +27,7 @@ export default function ProofModal({ proof, onClose }: ProofModalProps) {
           <div>
             <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 28, letterSpacing: 2 }}>{proof.name}</div>
             <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>
-              {proof.activity_type} · {proof.distance_miles} mi · {formatTrustName(proof.trust)}
+              {proof.activity_type} · {proof.distance_miles} mi · {proof.trust}
             </div>
           </div>
           <button
