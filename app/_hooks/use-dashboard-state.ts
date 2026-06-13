@@ -1,5 +1,5 @@
 import type { ChangeEvent } from 'react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import {
   ALLOWED_PROOF_MIME_TYPES,
@@ -42,6 +42,7 @@ export function useDashboardState(): DashboardState {
   const [authError, setAuthError] = useState('')
   const [proofs, setProofs] = useState<ProofItem[]>([])
   const [proofsLoading, setProofsLoading] = useState(false)
+  const [proofsLoaded, setProofsLoaded] = useState(false)
   const [proofRefreshKey, setProofRefreshKey] = useState(0)
   const [selectedProof, setSelectedProof] = useState<ProofItem | null>(null)
 
@@ -121,13 +122,6 @@ export function useDashboardState(): DashboardState {
     void loadStats()
     void syncUser()
 
-    const channel = supabase
-      .channel('miles_changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'miles_submissions' }, () => {
-        void loadStats()
-      })
-      .subscribe()
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -143,7 +137,6 @@ export function useDashboardState(): DashboardState {
     return () => {
       active = false
       subscription.unsubscribe()
-      supabase.removeChannel(channel)
     }
   }, [])
 
@@ -154,44 +147,43 @@ export function useDashboardState(): DashboardState {
     setDaysRemaining(Math.max(0, diffDays))
   }, [])
 
-  useEffect(() => {
-    let active = true
+  const loadProofs = useCallback(async () => {
+    if (!user) {
+      setProofs([])
+      setProofsLoaded(false)
+      setProofsLoading(false)
+      return
+    }
 
-    const loadProofs = async () => {
-      if (!user) {
+    setProofsLoaded(true)
+    setProofsLoading(true)
+
+    try {
+      const response = await fetch('/api/proofs')
+
+      if (!response.ok) {
         setProofs([])
-        setProofsLoading(false)
         return
       }
 
-      setProofsLoading(true)
-
-      try {
-        const response = await fetch('/api/proofs')
-
-        if (!active) return
-
-        if (!response.ok) {
-          setProofs([])
-          return
-        }
-
-        const data = await response.json()
-
-        if (!active) return
-
-        setProofs(data.proofs ?? [])
-      } finally {
-        if (active) setProofsLoading(false)
-      }
+      const data = await response.json()
+      setProofs(data.proofs ?? [])
+    } finally {
+      setProofsLoading(false)
     }
+  }, [user])
 
+  useEffect(() => {
+    if (user || !proofsLoaded) return
+    setProofs([])
+    setProofsLoaded(false)
+    setProofsLoading(false)
+  }, [user, proofsLoaded])
+
+  useEffect(() => {
+    if (!user || !proofsLoaded) return
     void loadProofs()
-
-    return () => {
-      active = false
-    }
-  }, [user, proofRefreshKey])
+  }, [user, proofsLoaded, proofRefreshKey, loadProofs])
 
   useEffect(() => {
     if (!selectedProof) return
@@ -364,6 +356,10 @@ export function useDashboardState(): DashboardState {
     if (response.ok) {
       setSubmitWarning(data.warning ?? '')
       setSubmitted(true)
+      const statsResponse = await fetch('/api/stats')
+      if (statsResponse.ok) {
+        setStats(await statsResponse.json())
+      }
       setProofRefreshKey(current => current + 1)
 
       setTimeout(() => {
@@ -419,6 +415,7 @@ export function useDashboardState(): DashboardState {
     authError,
     proofs,
     proofsLoading,
+    proofsLoaded,
     selectedProof,
     setSelectedProof,
     enteredDistance,
@@ -430,6 +427,7 @@ export function useDashboardState(): DashboardState {
     handleSignOut,
     handleProfileSave,
     handleProofSelected,
+    loadProofs,
     handleSubmit,
   }
 }

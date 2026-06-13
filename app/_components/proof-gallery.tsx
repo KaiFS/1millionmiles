@@ -8,12 +8,16 @@ import { formatTrustName, timeAgo } from '@/app/_lib/dashboard-utils'
 type ProofGalleryProps = {
   proofs: ProofItem[]
   proofsLoading: boolean
+  proofsLoaded: boolean
+  onLoadProofs: () => void
   onSelectProof: (proof: ProofItem) => void
 }
 
 export default function ProofGallery({
   proofs,
   proofsLoading,
+  proofsLoaded,
+  onLoadProofs,
   onSelectProof,
 }: ProofGalleryProps) {
   return (
@@ -29,7 +33,11 @@ export default function ProofGallery({
           Screenshots are visible to signed-in users only. Please only upload images you are comfortable sharing inside the challenge.
         </div>
       </div>
-      {proofsLoading ? (
+      {!proofsLoaded ? (
+        <button className="amber-btn" type="button" onClick={onLoadProofs}>
+          Load recent proof screenshots
+        </button>
+      ) : proofsLoading ? (
         <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>Loading proof uploads...</div>
       ) : proofs.length === 0 ? (
         <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>No proof screenshots uploaded yet.</div>
@@ -47,6 +55,8 @@ export default function ProofGallery({
                 <img
                   src={proof.proof_url}
                   alt={`${proof.name} ${proof.activity_type} proof`}
+                  loading="lazy"
+                  decoding="async"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               </div>

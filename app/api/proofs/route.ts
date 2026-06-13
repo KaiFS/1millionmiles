@@ -31,7 +31,7 @@ export async function GET() {
     .from('submission_proofs')
     .select('submission_id, storage_path, created_at')
     .order('created_at', { ascending: false })
-    .limit(12)
+    .limit(6)
 
   if (proofsError) {
     return NextResponse.json({ error: proofsError.message }, { status: 500 })
@@ -41,7 +41,9 @@ export async function GET() {
   const submissionIds = proofRows.map(proof => proof.submission_id)
 
   if (submissionIds.length === 0) {
-    return NextResponse.json({ proofs: [] })
+    return NextResponse.json({ proofs: [] }, {
+      headers: { 'Cache-Control': 'private, max-age=300' },
+    })
   }
 
   const { data: submissions, error: submissionsError } = await supabase
@@ -81,5 +83,7 @@ export async function GET() {
     })
     .filter(Boolean)
 
-  return NextResponse.json({ proofs: items })
+  return NextResponse.json({ proofs: items }, {
+    headers: { 'Cache-Control': 'private, max-age=300' },
+  })
 }
