@@ -80,7 +80,11 @@ export async function GET() {
   )
 
   const signedUrls = await Promise.all(
-    proofRows.map(proof => getCachedSignedUrl(supabase, proof.storage_path))
+    proofRows.map(proof =>
+      proof.storage_path.startsWith('https://')
+        ? proof.storage_path
+        : getCachedSignedUrl(supabase, proof.storage_path)
+    )
   )
 
   const items = proofRows

@@ -190,7 +190,7 @@ export function useDashboardState(): DashboardState {
     setProofsLoading(true)
 
     try {
-      const response = await fetch('/api/proofs')
+      const response = await fetch('/api/proofs', { cache: 'no-store' })
 
       if (!response.ok) {
         setProofs([])
@@ -402,12 +402,12 @@ export function useDashboardState(): DashboardState {
     if (response.ok) {
       setSubmitWarning(data.warning ?? '')
       setSubmitted(true)
-      const statsResponse = await fetch('/api/stats')
+      const statsResponse = await fetch('/api/stats', { cache: 'no-store' })
       if (statsResponse.ok) {
         setStats(await statsResponse.json())
       }
       if (user) {
-        const meStatsResponse = await fetch('/api/me/stats')
+        const meStatsResponse = await fetch('/api/me/stats', { cache: 'no-store' })
         if (meStatsResponse.ok) {
           setPersonalStats(await meStatsResponse.json())
         }
