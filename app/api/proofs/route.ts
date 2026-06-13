@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { PROOF_BUCKET } from '@/lib/challenge'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 type ProofRow = {
   submission_id: string
@@ -15,6 +16,25 @@ type SubmissionRow = {
   activity_type: string
   distance_miles: number
   created_at: string
+}
+
+const SIGNED_URL_TTL = 60 * 60 * 24 * 7 // 7 days
+const CACHE_TTL_MS = 6 * 24 * 60 * 60 * 1000 // 6 days (refresh 1 day before expiry)
+
+// Persists across requests within the same Node.js process instance
+const urlCache = new Map<string, { url: string; expiresAt: number }>()
+
+async function getCachedSignedUrl(supabase: SupabaseClient, path: string): Promise<string | null> {
+  const cached = urlCache.get(path)
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.url
+  }
+
+  const { data } = await supabase.storage.from(PROOF_BUCKET).createSignedUrl(path, SIGNED_URL_TTL)
+  if (!data?.signedUrl) return null
+
+  urlCache.set(path, { url: data.signedUrl, expiresAt: Date.now() + CACHE_TTL_MS })
+  return data.signedUrl
 }
 
 export async function GET() {
@@ -42,7 +62,7 @@ export async function GET() {
 
   if (submissionIds.length === 0) {
     return NextResponse.json({ proofs: [] }, {
-      headers: { 'Cache-Control': 'private, max-age=300' },
+      headers: { 'Cache-Control': 'private, max-age=86400' },
     })
   }
 
@@ -60,15 +80,13 @@ export async function GET() {
   )
 
   const signedUrls = await Promise.all(
-    proofRows.map(proof =>
-      supabase.storage.from(PROOF_BUCKET).createSignedUrl(proof.storage_path, 60 * 60)
-    )
+    proofRows.map(proof => getCachedSignedUrl(supabase, proof.storage_path))
   )
 
   const items = proofRows
     .map((proof, index) => {
       const submission = submissionMap.get(proof.submission_id)
-      const signedUrl = signedUrls[index]?.data?.signedUrl
+      const signedUrl = signedUrls[index]
 
       if (!submission || !signedUrl) {
         return null
@@ -84,6 +102,6 @@ export async function GET() {
     .filter(Boolean)
 
   return NextResponse.json({ proofs: items }, {
-    headers: { 'Cache-Control': 'private, max-age=300' },
+    headers: { 'Cache-Control': 'private, max-age=86400' },
   })
 }
