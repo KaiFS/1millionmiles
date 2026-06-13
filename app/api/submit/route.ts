@@ -6,11 +6,11 @@ import {
   isAllowedProofMimeType,
   MAX_DISTANCE_MILES,
   MAX_PROOF_FILE_BYTES,
-  PROOF_BUCKET,
   type DistanceUnit,
 } from '@/lib/challenge'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getUserDisplayName } from '@/lib/user-display'
+import { deleteFromR2, uploadToR2 } from '@/lib/r2'
 
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
@@ -53,7 +53,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid distance' }, { status: 400 })
   }
 
-  let proofPath: string | null = null
+  let proofKey: string | null = null
+  let proofUrl: string | null = null
   let proofUploadWarning: string | null = null
 
   if (proof instanceof File) {
@@ -69,18 +70,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Proof image must be 10MB or smaller.' }, { status: 400 })
     }
 
-    proofPath = formatProofPath(user.id, proof.type)
+    proofKey = formatProofPath(user.id, proof.type)
 
-    const { error: uploadError } = await supabase.storage
-      .from(PROOF_BUCKET)
-      .upload(proofPath, await proof.arrayBuffer(), {
-        contentType: proof.type,
-        cacheControl: '604800',
-        upsert: false,
-      })
-
-    if (uploadError) {
-      return NextResponse.json({ error: uploadError.message }, { status: 500 })
+    try {
+      proofUrl = await uploadToR2(proofKey, await proof.arrayBuffer(), proof.type)
+    } catch {
+      return NextResponse.json({ error: 'Proof upload failed.' }, { status: 500 })
     }
   }
 
@@ -97,31 +92,32 @@ export async function POST(req: NextRequest) {
     })
 
   if (error) {
-    if (proofPath) {
-      await supabase.storage.from(PROOF_BUCKET).remove([proofPath])
+    if (proofKey) {
+      await deleteFromR2(proofKey)
     }
 
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  if (proof instanceof File && proofPath) {
+  if (proof instanceof File && proofUrl && proofKey) {
     if (user) {
       const { error: proofError } = await supabase.from('submission_proofs').insert({
         submission_id: submissionId,
         user_id: user.id,
-        storage_path: proofPath,
+        storage_path: proofUrl,
         mime_type: proof.type,
         size_bytes: proof.size,
       })
 
       if (proofError) {
+        console.error('[submit] proof insert failed:', proofError.message, proofError.code, proofError.details)
         proofUploadWarning = 'Miles were logged, but the proof screenshot could not be attached.'
-        await supabase.storage.from(PROOF_BUCKET).remove([proofPath])
+        await deleteFromR2(proofKey)
       }
     }
   }
 
-  revalidateTag('dashboard-stats', 'max')
+  revalidateTag('dashboard-stats', { expire: 0 })
 
   return NextResponse.json({ success: true, warning: proofUploadWarning })
 }
