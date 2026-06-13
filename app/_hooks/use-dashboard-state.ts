@@ -12,7 +12,7 @@ import { compressProofImage } from '@/lib/proof-compression'
 import { supabase } from '@/lib/supabase'
 import { getUserDisplayName } from '@/lib/user-display'
 import { GOAL } from '@/app/_lib/dashboard-constants'
-import type { DashboardFormState, DashboardState, ProofItem, Stats, UserProfile } from '@/app/_lib/dashboard-types'
+import type { DashboardFormState, DashboardState, PersonalStats, ProofItem, Stats, UserProfile } from '@/app/_lib/dashboard-types'
 
 const DEFAULT_FORM: DashboardFormState = {
   name: '',
@@ -42,6 +42,8 @@ export function useDashboardState(): DashboardState {
   const [authLoading, setAuthLoading] = useState(true)
   const [authBusy, setAuthBusy] = useState(false)
   const [authError, setAuthError] = useState('')
+  const [personalStats, setPersonalStats] = useState<PersonalStats | null>(null)
+  const [personalStatsLoading, setPersonalStatsLoading] = useState(false)
   const [proofs, setProofs] = useState<ProofItem[]>([])
   const [proofsLoading, setProofsLoading] = useState(false)
   const [proofsLoaded, setProofsLoaded] = useState(false)
@@ -65,6 +67,31 @@ export function useDashboardState(): DashboardState {
         setStats(data)
       } finally {
         if (active) setLoading(false)
+      }
+    }
+
+    const loadPersonalStats = async (currentUser: User | null) => {
+      if (!currentUser) {
+        if (!active) return
+        setPersonalStats(null)
+        setPersonalStatsLoading(false)
+        return
+      }
+
+      setPersonalStatsLoading(true)
+
+      try {
+        const response = await fetch('/api/me/stats')
+
+        if (!active) return
+
+        if (response.ok) {
+          setPersonalStats(await response.json())
+        } else {
+          setPersonalStats(null)
+        }
+      } finally {
+        if (active) setPersonalStatsLoading(false)
       }
     }
 
@@ -111,6 +138,7 @@ export function useDashboardState(): DashboardState {
 
       setUser(currentUser ?? null)
       void loadProfile(currentUser ?? null)
+      void loadPersonalStats(currentUser ?? null)
       setAuthLoading(false)
     }
 
@@ -131,6 +159,7 @@ export function useDashboardState(): DashboardState {
       const currentUser = session?.user ?? null
       setUser(currentUser)
       void loadProfile(currentUser)
+      void loadPersonalStats(currentUser)
       setAuthLoading(false)
       setAuthBusy(false)
       setAuthError('')
@@ -377,6 +406,12 @@ export function useDashboardState(): DashboardState {
       if (statsResponse.ok) {
         setStats(await statsResponse.json())
       }
+      if (user) {
+        const meStatsResponse = await fetch('/api/me/stats')
+        if (meStatsResponse.ok) {
+          setPersonalStats(await meStatsResponse.json())
+        }
+      }
       setProofRefreshKey(current => current + 1)
 
       setTimeout(() => {
@@ -430,6 +465,8 @@ export function useDashboardState(): DashboardState {
     authLoading,
     authBusy,
     authError,
+    personalStats,
+    personalStatsLoading,
     proofs,
     proofsLoading,
     proofsLoaded,
