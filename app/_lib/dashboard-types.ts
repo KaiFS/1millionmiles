@@ -73,7 +73,6 @@ export type DashboardState = {
   personalStatsLoading: boolean
   proofs: ProofItem[]
   proofsLoading: boolean
-  proofsLoaded: boolean
   selectedProof: ProofItem | null
   setSelectedProof: (proof: ProofItem | null) => void
   enteredDistance: number
@@ -85,6 +84,5 @@ export type DashboardState = {
   handleSignOut: () => Promise<void>
   handleProfileSave: (firstName: string, lastName: string) => Promise<void>
   handleProofSelected: (event: React.ChangeEvent<HTMLInputElement>) => void
-  loadProofs: () => Promise<void>
   handleSubmit: () => Promise<void>
 }

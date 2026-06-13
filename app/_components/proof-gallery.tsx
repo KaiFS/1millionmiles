@@ -8,16 +8,12 @@ import { timeAgo } from '@/app/_lib/dashboard-utils'
 type ProofGalleryProps = {
   proofs: ProofItem[]
   proofsLoading: boolean
-  proofsLoaded: boolean
-  onLoadProofs: () => void
   onSelectProof: (proof: ProofItem) => void
 }
 
 export default function ProofGallery({
   proofs,
   proofsLoading,
-  proofsLoaded,
-  onLoadProofs,
   onSelectProof,
 }: ProofGalleryProps) {
   return (
@@ -33,11 +29,7 @@ export default function ProofGallery({
           Screenshots are visible to signed-in users only. Please only upload images you are comfortable sharing inside the challenge.
         </div>
       </div>
-      {!proofsLoaded ? (
-        <button className="amber-btn" type="button" onClick={onLoadProofs}>
-          Load recent proof screenshots
-        </button>
-      ) : proofsLoading ? (
+      {proofsLoading ? (
         <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>Loading proof uploads...</div>
       ) : proofs.length === 0 ? (
         <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>No proof screenshots uploaded yet.</div>

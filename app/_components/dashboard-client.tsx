@@ -79,8 +79,6 @@ export default function DashboardClient() {
           <ProofGallery
             proofs={dashboard.proofs}
             proofsLoading={dashboard.proofsLoading}
-            proofsLoaded={dashboard.proofsLoaded}
-            onLoadProofs={() => { void dashboard.loadProofs() }}
             onSelectProof={proof => dashboard.setSelectedProof(proof)}
           />
         )}
