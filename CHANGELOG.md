@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-06-13
+
+### Added
+- Personal stats card ("Your Personal Contribution So Far") showing a signed-in user's total miles logged and current leaderboard rank, visible only when authenticated.
+- New authenticated API endpoint `/api/me/stats` returning a user's total miles, rank, and total participant count, queried by `user_id`.
+- Personal stats refresh automatically after sign-in and after a successful mile submission.
+
+### Changed
+- Leaderboard now aggregates by `user_id` instead of free-text name, eliminating same-name collisions, and increased from top 6 to top 10.
+- Dashboard layout reordered: "Support Our Challenge" moved from the main grid to the summary area; "Log Your Miles" moved from the summary area to the main grid (above Activity Feed).
+- "Live Feed" renamed to "Activity Feed" and the live pulse indicator removed, reflecting that entries are cached rather than real-time.
+- NHS trust label removed from Recent Submissions Gallery cards.
+
 ## [0.5.0] - 2026-06-13
 
 ### Added

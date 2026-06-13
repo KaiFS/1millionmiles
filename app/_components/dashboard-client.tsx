@@ -61,13 +61,19 @@ export default function DashboardClient() {
           participantCount={dashboard.stats?.participantCount ?? 0}
           daysRemaining={dashboard.daysRemaining}
           signedIn={signedIn}
+          personalStats={dashboard.personalStats}
+          personalStatsLoading={dashboard.personalStatsLoading}
+        />
+
+        <DashboardMainGrid
+          stats={dashboard.stats}
+          loading={dashboard.loading}
+          signedIn={signedIn}
           authBusy={authBusy}
           authLoading={authLoading}
           onSignIn={() => { void dashboard.handleGoogleSignIn() }}
           onOpenForm={() => dashboard.setShowForm(true)}
         />
-
-        <DashboardMainGrid stats={dashboard.stats} loading={dashboard.loading} />
 
         {signedIn && (
           <ProofGallery

@@ -1,6 +1,12 @@
 import type { User } from '@supabase/supabase-js'
 import type { DistanceUnit } from '@/lib/challenge'
 
+export type PersonalStats = {
+  totalMiles: number
+  rank: number
+  totalParticipants: number
+}
+
 export type Submission = {
   name: string
   trust: string
@@ -63,6 +69,8 @@ export type DashboardState = {
   authLoading: boolean
   authBusy: boolean
   authError: string
+  personalStats: PersonalStats | null
+  personalStatsLoading: boolean
   proofs: ProofItem[]
   proofsLoading: boolean
   proofsLoaded: boolean
