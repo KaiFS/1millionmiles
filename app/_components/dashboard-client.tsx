@@ -9,8 +9,11 @@ import DashboardSummary from '@/app/_components/dashboard-summary'
 import ProofGallery from '@/app/_components/proof-gallery'
 import ProofModal from '@/app/_components/proof-modal'
 import SubmitMilesModal from '@/app/_components/submit-miles-modal'
+import PrivacyPolicyModal from '@/app/_components/privacy-policy-modal'
+import TermsOfServiceModal from '@/app/_components/terms-of-service-modal'
 import { useCountUp } from '@/app/_hooks/use-count-up'
 import { useDashboardState } from '@/app/_hooks/use-dashboard-state'
+import React from 'react'
 
 export default function DashboardClient() {
   const dashboard = useDashboardState()
@@ -18,6 +21,8 @@ export default function DashboardClient() {
   const signedIn = dashboard.isHydrated && Boolean(dashboard.user)
   const authBusy = dashboard.isHydrated ? dashboard.authBusy : false
   const authLoading = dashboard.isHydrated ? dashboard.authLoading : false
+  const [showPrivacyModal, setShowPrivacyModal] = React.useState(false)
+  const [showTermsModal, setShowTermsModal] = React.useState(false)
 
   return (
     <div style={{ fontFamily: 'var(--font-dm-sans), sans-serif', background: '#0a0f1e', minHeight: '100vh', color: '#fff' }}>
@@ -104,12 +109,37 @@ export default function DashboardClient() {
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
         <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>© 2026 One Million Miles Challenge</div>
         <div style={{ display: 'flex', gap: 18 }}>
-          <a href="https://www.justgiving.com/page/onemillion-oneteam?utm_medium=FR&utm_source=CL" target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#ED8B00', cursor: 'pointer' }}>Donate via JustGiving →</a>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}>About</span>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}>Privacy</span>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}>Contact</span>
+          <a
+            href="https://www.justgiving.com/page/onemillion-oneteam?utm_medium=FR&utm_source=CL"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: 12, color: '#ED8B00', cursor: 'pointer' }}
+          >
+            Donate via JustGiving →
+          </a>
+          <span
+            style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}
+            onClick={() => setShowTermsModal(true)}
+          >
+            About
+          </span>
+          <span
+            style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}
+            onClick={() => setShowPrivacyModal(true)}
+          >
+            Privacy
+          </span>
+          <span
+            style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}
+            onClick={() => window.open('mailto:kai.fs1996@gmail.com', '_blank')}
+          >
+            Contact
+          </span>
         </div>
       </div>
+
+      <PrivacyPolicyModal open={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
+      <TermsOfServiceModal open={showTermsModal} onClose={() => setShowTermsModal(false)} />
 
       {dashboard.selectedProof && (
         <ProofModal proof={dashboard.selectedProof} onClose={() => dashboard.setSelectedProof(null)} />
