@@ -6,7 +6,9 @@ import {
   convertToMiles,
   MAX_DISTANCE_MILES,
   MAX_PROOF_FILE_BYTES,
+  MAX_PROOF_SOURCE_FILE_BYTES,
 } from '@/lib/challenge'
+import { compressProofImage } from '@/lib/proof-compression'
 import { supabase } from '@/lib/supabase'
 import { getUserDisplayName } from '@/lib/user-display'
 import { GOAL } from '@/app/_lib/dashboard-constants'
@@ -282,7 +284,7 @@ export function useDashboardState(): DashboardState {
     }))
   }
 
-  const handleProofSelected = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleProofSelected = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null
     setFormError('')
 
@@ -298,14 +300,29 @@ export function useDashboardState(): DashboardState {
       return
     }
 
-    if (file.size > MAX_PROOF_FILE_BYTES) {
+    if (file.size > MAX_PROOF_SOURCE_FILE_BYTES) {
       setProofFile(null)
-      setFormError('Proof image must be 10MB or smaller.')
+      setFormError('Proof image must be 20MB or smaller before compression.')
       event.target.value = ''
       return
     }
 
-    setProofFile(file)
+    try {
+      const compressedFile = await compressProofImage(file)
+
+      if (compressedFile.size > MAX_PROOF_FILE_BYTES) {
+        setProofFile(null)
+        setFormError('Proof image is still too large after compression. Please choose a smaller screenshot.')
+        event.target.value = ''
+        return
+      }
+
+      setProofFile(compressedFile)
+    } catch {
+      setProofFile(null)
+      setFormError('Proof image could not be compressed. Please choose a different screenshot.')
+      event.target.value = ''
+    }
   }
 
   const handleSubmit = async () => {
