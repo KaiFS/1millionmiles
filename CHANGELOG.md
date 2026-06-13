@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-13
+
+### Added
+- Privacy Policy modal with GDPR-compliant content covering data collection, usage, user rights, and retention.
+- Terms of Service modal covering accounts, conduct, intellectual property, donations, and liability.
+- Footer links wired to open the Privacy Policy and Terms of Service modals on click.
+- Contact footer link opening a mailto: compose window.
+- Escape key handler to close both modals via keyboard.
+- CONTRIBUTING.md with code standards, file organization, and quality guidelines.
+
+### Changed
+- Added `docs/` directory to `.gitignore` for internal documentation.
+
+### Fixed
+- Removed "need to convert miles?" text from the dashboard.
+
 ## [0.4.0] - 2026-05-28
 
 ### Added
