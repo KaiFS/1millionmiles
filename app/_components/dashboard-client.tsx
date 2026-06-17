@@ -13,6 +13,7 @@ import PrivacyPolicyModal from '@/app/_components/privacy-policy-modal'
 import TermsOfServiceModal from '@/app/_components/terms-of-service-modal'
 import { useCountUp } from '@/app/_hooks/use-count-up'
 import { useDashboardState } from '@/app/_hooks/use-dashboard-state'
+import { getProviderDisplayName, splitDisplayName } from '@/lib/user-display'
 import React from 'react'
 
 export default function DashboardClient() {
@@ -24,6 +25,9 @@ export default function DashboardClient() {
   const [showPrivacyModal, setShowPrivacyModal] = React.useState(false)
   const [showTermsModal, setShowTermsModal] = React.useState(false)
 
+  // For a first-time user (no profile row yet) seed the modal from their Google name.
+  const googleName = splitDisplayName(getProviderDisplayName(dashboard.user))
+
   return (
     <div style={{ fontFamily: 'var(--font-dm-sans), sans-serif', background: '#0a0f1e', minHeight: '100vh', color: '#fff' }}>
       <DashboardNav
@@ -34,15 +38,24 @@ export default function DashboardClient() {
         onSignIn={() => { void dashboard.handleGoogleSignIn() }}
         onSignOut={() => { void dashboard.handleSignOut() }}
         onOpenForm={() => dashboard.setShowForm(true)}
+        onEditProfile={() => dashboard.setShowProfileEdit(true)}
       />
 
       <ProfileCompletionModal
-        key={`profile-modal-${dashboard.user?.id ?? 'guest'}-${dashboard.showProfilePrompt ? 'open' : 'closed'}`}
-        open={signedIn && dashboard.showProfilePrompt}
+        key={`profile-modal-${dashboard.user?.id ?? 'guest'}-${dashboard.showProfilePrompt || dashboard.showProfileEdit}`}
+        open={signedIn && (dashboard.showProfilePrompt || dashboard.showProfileEdit)}
+        mode={dashboard.showProfileEdit ? 'edit' : 'prompt'}
         saving={dashboard.profileSaving}
         error={dashboard.profileError}
-        onSubmit={(firstName, lastName) => {
-          void dashboard.handleProfileSave(firstName, lastName)
+        initialFirstName={dashboard.profile?.first_name ?? googleName.firstName}
+        initialLastName={dashboard.profile?.last_name ?? googleName.lastName}
+        initialJobRole={dashboard.profile?.job_role}
+        onSubmit={(firstName, lastName, jobRole) => {
+          void dashboard.handleProfileSave(firstName, lastName, jobRole)
+        }}
+        onClose={() => {
+          dashboard.setShowProfilePrompt(false)
+          dashboard.setShowProfileEdit(false)
         }}
       />
 

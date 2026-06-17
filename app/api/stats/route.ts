@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { unstable_cache } from 'next/cache'
 import { NextResponse } from 'next/server'
+import type { Stats as DashboardStats } from '@/app/_lib/dashboard-types'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -9,14 +10,6 @@ const supabase = createClient(
 
 const STATS_CACHE_SECONDS = 300
 const STATS_STALE_SECONDS = 900
-
-type DashboardStats = {
-  totalMiles: number
-  participantCount: number
-  leaderboard: { name: string; miles: number; trust: string }[]
-  trusts: { name: string; miles: number }[]
-  recent: { name: string; trust: string; activity_type: string; distance_miles: number; created_at: string }[]
-}
 
 const getStats = unstable_cache(
   async (): Promise<DashboardStats> => {
@@ -45,8 +38,11 @@ const getStats = unstable_cache(
       }
       byUser[row.user_id].miles += row.distance_miles
     })
+    // Fallback runs on the anon client, which RLS blocks from reading other users'
+    // user_profiles — so job_role is unavailable here by design. Roles only appear via
+    // the get_dashboard_stats() RPC (SECURITY DEFINER). The render guard handles the absence.
     const leaderboard = Object.values(byUser)
-      .map(d => ({ name: d.name, miles: Math.round(d.miles * 10) / 10, trust: d.trust }))
+      .map(d => ({ name: d.name, miles: Math.round(d.miles * 10) / 10, trust: d.trust, job_role: null }))
       .sort((a, b) => b.miles - a.miles)
       .slice(0, 10)
 
@@ -70,7 +66,8 @@ const getStats = unstable_cache(
       participantCount: uniqueParticipants,
       leaderboard,
       trusts,
-      recent: recent ?? [],
+      // job_role: null for the same RLS reason as leaderboard above.
+      recent: (recent ?? []).map(r => ({ ...r, job_role: null })),
     }
   },
   ['dashboard-stats'],

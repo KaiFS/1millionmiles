@@ -7,12 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- Stats display now shows dashes (—) for all figures when the database is temporarily unavailable, rather than leaving stale or broken values on the dashboard.
-- `/api/stats` now returns a `503` with `Cache-Control: no-store` on database failure rather than an unhandled exception, so errors do not get cached by the CDN.
+## [0.8.0] - 2026-06-17
+
+### Added
+- Optional **job role** on user profiles (Doctor, Nurse, ACP, Physio, Tech, Admin, Housekeeper, Dietician, Pharmacist, or a custom "Other" up to 15 characters), shown inline next to a member's name in the leaderboard and activity feed.
+- One-time role prompt on sign-in via the profile modal, tracked by a new `role_prompted_at` column so it appears exactly once (existing users included) and never again after Save or "Skip for now".
+- "Edit Profile" entry point in the nav: the signed-in chip is now a button that reopens the profile modal in edit mode to change name or role at any time.
+- New-user profile modal pre-fills the first and last name from the Google account name.
+- Shared `PREDEFINED_ROLES` constant (`lib/roles.ts`) used by both the profile API and the modal as a single source of truth.
 
 ### Changed
-- Added `docs/` to `.gitignore` for internal AI-generated design specs.
+- `user_profiles` gains nullable `job_role` and `role_prompted_at` columns (additive migration, no defaults).
+- `get_dashboard_stats()` is now `SECURITY DEFINER` with a pinned `search_path` and LEFT JOINs `user_profiles`, so `job_role` reaches the public leaderboard and activity feed.
+- `/api/stats` route now imports the canonical `Stats` type instead of redeclaring it, keeping the two stats sources from drifting.
+
+### Fixed
+- Editing a profile name now **retroactively** updates the denormalised name on all of that user's past submissions, so the leaderboard and activity feed show their current name throughout their history
+- Profile saves now invalidate and refetch the dashboard stats cache (`revalidateTag` + `no-store` refetch), so role and name changes appear without a manual reload.
+- Stats display now shows dashes (-) for all figures when the database is temporarily unavailable, rather than leaving stale or broken values on the dashboard.
+- `/api/stats` now returns a `503` with `Cache-Control: no-store` on database failure rather than an unhandled exception, so errors do not get cached by the CDN.
 
 ## [0.7.0] - 2026-06-13
 
@@ -117,7 +130,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Public miles submission flow backed by Supabase.
 - Aggregate stats, trust rankings, and recent activity feed for challenge progress tracking.
 
-[Unreleased]: https://github.com/KaiFS/1millionmiles/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/KaiFS/1millionmiles/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/KaiFS/1millionmiles/compare/v0.7.0...v0.8.0
 [0.4.0]: https://github.com/KaiFS/1millionmiles/releases/tag/v0.4.0
 [0.3.0]: https://github.com/KaiFS/1millionmiles/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/KaiFS/1millionmiles/compare/v0.1.0...v0.2.0

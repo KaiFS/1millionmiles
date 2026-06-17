@@ -10,6 +10,7 @@ type DashboardNavProps = {
   onSignIn: () => void
   onSignOut: () => void
   onOpenForm: () => void
+  onEditProfile: () => void
 }
 
 export default function DashboardNav({
@@ -20,6 +21,7 @@ export default function DashboardNav({
   onSignIn,
   onSignOut,
   onOpenForm,
+  onEditProfile,
 }: DashboardNavProps) {
   return (
     <nav
@@ -60,10 +62,18 @@ export default function DashboardNav({
         </div>
         {signedIn ? (
           <>
-            <div style={{ padding: '8px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', maxWidth: 220 }}>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: 1.2 }}>Signed In</div>
-              <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{userLabel}</div>
-            </div>
+            <button
+              onClick={onEditProfile}
+              title="Edit profile"
+              aria-label="Edit profile"
+              style={{ padding: '8px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', maxWidth: 220, cursor: 'pointer', textAlign: 'left', font: 'inherit', color: 'inherit' }}
+            >
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: 1.2 }}>Edit Profile</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{userLabel}</span>
+                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, flexShrink: 0, lineHeight: 1 }}>✎</span>
+              </div>
+            </button>
             <button className="ghost-btn" onClick={onSignOut} disabled={authBusy}>
               {authBusy ? 'Working...' : 'Sign Out'}
             </button>

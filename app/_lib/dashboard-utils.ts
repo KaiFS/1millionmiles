@@ -1,3 +1,5 @@
+import type { UserProfile } from '@/app/_lib/dashboard-types'
+
 export function timeAgo(dateStr: string) {
   const diff = (Date.now() - new Date(dateStr).getTime()) / 1000
   if (diff < 60) return `${Math.floor(diff)}s ago`
@@ -22,4 +24,8 @@ export function formatFileSize(bytes: number) {
 
 export function formatTrustName(name: string) {
   return name.replace(' NHS Foundation Trust', '').replace(' NHS Trust', '')
+}
+
+export function needsRolePrompt(profile: UserProfile | null): boolean {
+  return !profile || !profile.role_prompted_at
 }

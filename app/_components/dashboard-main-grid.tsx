@@ -41,8 +41,13 @@ export default function DashboardMainGrid({ stats, loading, signedIn, authBusy, 
                     {initials(participant.name)}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-                      <span style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{participant.name}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4, gap: 8 }}>
+                      <div style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 6, overflow: 'hidden' }}>
+                        <span style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{participant.name}</span>
+                        {participant.job_role && participant.job_role.trim() && (
+                          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap', flexShrink: 0 }}>{participant.job_role}</span>
+                        )}
+                      </div>
                       <span style={{ fontFamily: 'var(--font-dm-mono), monospace', fontSize: 13, color: '#ED8B00', flexShrink: 0, marginLeft: 8 }}>{participant.miles.toLocaleString()}</span>
                     </div>
                     <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 4, height: 4, overflow: 'hidden' }}>
@@ -101,8 +106,11 @@ export default function DashboardMainGrid({ stats, loading, signedIn, authBusy, 
                     {initials(activity.name)}
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 500 }}>
-                      {activity.name}
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, overflow: 'hidden' }}>
+                      <span style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activity.name}</span>
+                      {activity.job_role && activity.job_role.trim() && (
+                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap', flexShrink: 0 }}>{activity.job_role}</span>
+                      )}
                     </div>
                     <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{activity.activity_type}</div>
                   </div>
