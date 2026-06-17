@@ -11,6 +11,15 @@ create table if not exists public.user_profiles (
   updated_at timestamptz default now()
 );
 
+alter table public.user_profiles
+  add column if not exists job_role text
+    check (job_role is null or char_length(btrim(job_role)) <= 15);
+
+alter table public.user_profiles
+  add column if not exists role_prompted_at timestamptz;
+-- NO DEFAULT — existing rows get null, which triggers the one-time role prompt on next sign-in.
+-- A DEFAULT now() would silently mark all existing users as already-prompted.
+
 -- Public leaderboard data
 create table if not exists public.miles_submissions (
   id uuid default gen_random_uuid() primary key,
@@ -149,11 +158,19 @@ create index if not exists idx_submission_proofs_created_at on public.submission
 create index if not exists idx_submission_proofs_user_id on public.submission_proofs (user_id);
 create index if not exists idx_user_profiles_updated_at on public.user_profiles (updated_at desc);
 
+-- SECURITY DEFINER: required so this function can JOIN user_profiles across users
+-- without RLS blocking cross-user reads. search_path is pinned to prevent
+-- privilege-escalation via search_path mutation (standard SECURITY DEFINER hygiene).
+-- pg_temp is included per standard recommendation; every table below is also
+-- explicitly public.-qualified, so resolution never depends on search_path order.
+-- anon + authenticated both keep EXECUTE: the leaderboard is the public landing page.
+-- job_role is intentionally readable by anonymous callers alongside names and miles.
 create or replace function public.get_dashboard_stats()
 returns jsonb
 language sql
 stable
-set search_path = public
+security definer
+set search_path = public, pg_temp
 as $$
   with user_totals as (
     select
@@ -175,9 +192,11 @@ as $$
     limit 5
   ),
   recent_submissions as (
-    select name, trust, activity_type, distance_miles, created_at
-    from public.miles_submissions
-    order by created_at desc
+    select ms.name, ms.trust, ms.activity_type, ms.distance_miles, ms.created_at,
+           up.job_role
+    from public.miles_submissions ms
+    left join public.user_profiles up on ms.user_id = up.user_id
+    order by ms.created_at desc
     limit 10
   )
   select jsonb_build_object(
@@ -185,11 +204,13 @@ as $$
     'participantCount', coalesce((select count(distinct user_id) from public.miles_submissions where user_id is not null), 0),
     'leaderboard', coalesce((
       select jsonb_agg(jsonb_build_object(
-        'name', name,
-        'miles', round(miles, 1),
-        'trust', trust
-      ) order by miles desc)
-      from (select * from user_totals order by miles desc limit 10) ranked_users
+        'name', ut.name,
+        'miles', round(ut.miles, 1),
+        'trust', ut.trust,
+        'job_role', up.job_role
+      ) order by ut.miles desc)
+      from (select * from user_totals order by miles desc limit 10) ut
+      left join public.user_profiles up on ut.user_id = up.user_id
     ), '[]'::jsonb),
     'trusts', coalesce((
       select jsonb_agg(jsonb_build_object('name', name, 'miles', miles) order by miles desc)
