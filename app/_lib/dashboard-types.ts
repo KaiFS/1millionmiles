@@ -13,12 +13,13 @@ export type Submission = {
   activity_type: string
   distance_miles: number
   created_at: string
+  job_role: string | null
 }
 
 export type Stats = {
   totalMiles: number
   participantCount: number
-  leaderboard: { name: string; miles: number; trust: string }[]
+  leaderboard: { name: string; miles: number; trust: string; job_role: string | null }[]
   trusts: { name: string; miles: number }[]
   recent: Submission[]
 }
@@ -37,6 +38,8 @@ export type ProofItem = {
 export type UserProfile = {
   first_name: string
   last_name: string
+  job_role: string | null
+  role_prompted_at: string | null
 }
 
 export type DashboardFormState = {
@@ -67,6 +70,9 @@ export type DashboardState = {
   profileSaving: boolean
   profileError: string
   showProfilePrompt: boolean
+  setShowProfilePrompt: (value: boolean) => void
+  showProfileEdit: boolean
+  setShowProfileEdit: (value: boolean) => void
   authLoading: boolean
   authBusy: boolean
   authError: string
@@ -83,7 +89,7 @@ export type DashboardState = {
   userLabel: string
   handleGoogleSignIn: () => Promise<void>
   handleSignOut: () => Promise<void>
-  handleProfileSave: (firstName: string, lastName: string) => Promise<void>
+  handleProfileSave: (firstName: string, lastName: string, jobRole: string | null) => Promise<void>
   handleProofSelected: (event: React.ChangeEvent<HTMLInputElement>) => void
   handleSubmit: () => Promise<void>
 }
