@@ -7,6 +7,7 @@ import ProgressRing from '@/app/_components/progress-ring'
 
 type DashboardSummaryProps = {
   loading: boolean
+  statsError: boolean
   animatedMiles: number
   pct: number
   totalMiles: number
@@ -19,6 +20,7 @@ type DashboardSummaryProps = {
 
 export default function DashboardSummary({
   loading,
+  statsError,
   animatedMiles,
   pct,
   totalMiles,
@@ -28,6 +30,7 @@ export default function DashboardSummary({
   personalStats,
   personalStatsLoading,
 }: DashboardSummaryProps) {
+  const unavailable = !loading && statsError
   return (
     <>
       <div className="fade-in" style={{ marginBottom: 28 }}>
@@ -35,7 +38,7 @@ export default function DashboardSummary({
           <div>
             <div style={{ fontSize: 12, letterSpacing: 2.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 10, fontWeight: 500 }}>Total Miles Logged</div>
             <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 'clamp(56px,9vw,108px)', lineHeight: 0.88, letterSpacing: 2 }}>
-              {loading ? '—' : animatedMiles.toLocaleString()}
+              {loading || unavailable ? '—' : animatedMiles.toLocaleString()}
               <span style={{ color: '#005EB8', fontSize: '0.38em', marginLeft: 10, verticalAlign: 'middle' }}>mi</span>
             </div>
             <div style={{ marginTop: 16, fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>
@@ -67,10 +70,10 @@ export default function DashboardSummary({
 
       <div className="stats-grid fade-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 }}>
         {[
-          { icon: '👥', label: 'Participants', value: loading ? '—' : participantCount.toLocaleString(), sub: 'challengers' },
-          { icon: '🎯', label: 'Miles to Go', value: loading ? '—' : Math.max(0, GOAL - totalMiles).toLocaleString(), sub: 'remaining' },
+          { icon: '👥', label: 'Participants', value: loading || unavailable ? '—' : participantCount.toLocaleString(), sub: 'challengers' },
+          { icon: '🎯', label: 'Miles to Go', value: loading || unavailable ? '—' : Math.max(0, GOAL - totalMiles).toLocaleString(), sub: 'remaining' },
           { icon: '📅', label: 'Days Left', value: daysRemaining.toString(), sub: 'until June 1st, 2027' },
-          { icon: '📈', label: 'Miles Needed / Day', value: loading ? '—' : Math.ceil(Math.max(0, GOAL - totalMiles) / Math.max(daysRemaining, 1)).toLocaleString(), sub: 'to hit goal' },
+          { icon: '📈', label: 'Miles Needed / Day', value: loading || unavailable ? '—' : Math.ceil(Math.max(0, GOAL - totalMiles) / Math.max(daysRemaining, 1)).toLocaleString(), sub: 'to hit goal' },
         ].map((item, index) => (
           <div key={index} className="card" style={{ padding: '18px 20px' }}>
             <div style={{ fontSize: 20, marginBottom: 8 }}>{item.icon}</div>

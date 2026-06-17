@@ -26,9 +26,13 @@ const getStats = unstable_cache(
       return rpcData as DashboardStats
     }
 
-    const { data: allSubmissions } = await supabase
+    const { data: allSubmissions, error: fallbackError } = await supabase
       .from('miles_submissions')
       .select('user_id, name, trust, distance_miles')
+
+    if (fallbackError) {
+      throw new Error(`Database unavailable: ${fallbackError.message}`)
+    }
 
     const totalMiles = allSubmissions?.reduce((sum, row) => sum + row.distance_miles, 0) ?? 0
     const uniqueParticipants = new Set(allSubmissions?.map(r => r.user_id).filter(Boolean) ?? []).size
@@ -74,9 +78,16 @@ const getStats = unstable_cache(
 )
 
 export async function GET() {
-  return NextResponse.json(await getStats(), {
-    headers: {
-      'Cache-Control': `public, max-age=${STATS_CACHE_SECONDS}, s-maxage=${STATS_CACHE_SECONDS}, stale-while-revalidate=${STATS_STALE_SECONDS}`,
-    },
-  })
+  try {
+    return NextResponse.json(await getStats(), {
+      headers: {
+        'Cache-Control': `public, max-age=${STATS_CACHE_SECONDS}, s-maxage=${STATS_CACHE_SECONDS}, stale-while-revalidate=${STATS_STALE_SECONDS}`,
+      },
+    })
+  } catch {
+    return NextResponse.json(
+      { error: 'Stats temporarily unavailable' },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } }
+    )
+  }
 }

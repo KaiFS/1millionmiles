@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Stats display now shows dashes (—) for all figures when the database is temporarily unavailable, rather than leaving stale or broken values on the dashboard.
+- `/api/stats` now returns a `503` with `Cache-Control: no-store` on database failure rather than an unhandled exception, so errors do not get cached by the CDN.
+
+### Changed
+- Added `docs/` to `.gitignore` for internal AI-generated design specs.
+
 ## [0.7.0] - 2026-06-13
 
 ### Added

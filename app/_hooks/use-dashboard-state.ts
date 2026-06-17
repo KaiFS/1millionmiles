@@ -25,6 +25,7 @@ export function useDashboardState(): DashboardState {
   const [isHydrated, setIsHydrated] = useState(false)
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [statsError, setStatsError] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [daysRemaining, setDaysRemaining] = useState(365)
   const [form, setForm] = useState<DashboardFormState>(DEFAULT_FORM)
@@ -59,11 +60,17 @@ export function useDashboardState(): DashboardState {
     const loadStats = async () => {
       try {
         const response = await fetch('/api/stats')
-        const data = await response.json()
 
         if (!active) return
 
+        if (!response.ok) {
+          setStatsError(true)
+          return
+        }
+
+        const data = await response.json()
         setStats(data)
+        setStatsError(false)
       } finally {
         if (active) setLoading(false)
       }
@@ -442,6 +449,7 @@ export function useDashboardState(): DashboardState {
     isHydrated,
     stats,
     loading,
+    statsError,
     showForm,
     setShowForm,
     daysRemaining,

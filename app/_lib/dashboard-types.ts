@@ -50,6 +50,7 @@ export type DashboardState = {
   isHydrated: boolean
   stats: Stats | null
   loading: boolean
+  statsError: boolean
   showForm: boolean
   setShowForm: (value: boolean) => void
   daysRemaining: number
