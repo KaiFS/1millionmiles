@@ -12,18 +12,29 @@ export function getProfileDisplayName(profile: DisplayProfile | null) {
   return `${profile.first_name} ${profile.last_name}`.trim()
 }
 
+export function getProviderDisplayName(user: DisplayUser | null) {
+  if (!user) return ''
+
+  return String(
+    user.user_metadata?.full_name ??
+      user.user_metadata?.name ??
+      user.user_metadata?.user_name ??
+      ''
+  ).trim()
+}
+
 export function getUserDisplayName(user: DisplayUser | null, profile?: DisplayProfile | null) {
   const profileName = getProfileDisplayName(profile ?? null)
   if (profileName) return profileName
 
   if (!user) return ''
 
-  const metadataName = String(
-    user.user_metadata?.full_name ??
-      user.user_metadata?.name ??
-      user.user_metadata?.user_name ??
-      ''
-  ).trim()
+  return getProviderDisplayName(user) || user.email || 'Signed in user'
+}
 
-  return metadataName || user.email || 'Signed in user'
+export function splitDisplayName(fullName: string): { firstName: string; lastName: string } {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return { firstName: '', lastName: '' }
+  if (parts.length === 1) return { firstName: parts[0], lastName: '' }
+  return { firstName: parts[0], lastName: parts.slice(1).join(' ') }
 }
