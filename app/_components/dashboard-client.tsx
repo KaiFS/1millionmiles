@@ -55,6 +55,7 @@ export default function DashboardClient() {
 
         <DashboardSummary
           loading={dashboard.loading}
+          statsError={dashboard.statsError}
           animatedMiles={animatedMiles}
           pct={dashboard.pct}
           totalMiles={dashboard.totalMiles}
