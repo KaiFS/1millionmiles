@@ -12,6 +12,7 @@ import { compressProofImage } from '@/lib/proof-compression'
 import { supabase } from '@/lib/supabase'
 import { getUserDisplayName } from '@/lib/user-display'
 import { GOAL } from '@/app/_lib/dashboard-constants'
+import { needsRolePrompt } from '@/app/_lib/dashboard-utils'
 import type { DashboardFormState, DashboardState, PersonalStats, ProofItem, Stats, UserProfile } from '@/app/_lib/dashboard-types'
 
 const DEFAULT_FORM: DashboardFormState = {
@@ -40,6 +41,7 @@ export function useDashboardState(): DashboardState {
   const [profileSaving, setProfileSaving] = useState(false)
   const [profileError, setProfileError] = useState('')
   const [showProfilePrompt, setShowProfilePrompt] = useState(false)
+  const [showProfileEdit, setShowProfileEdit] = useState(false)
   const [authLoading, setAuthLoading] = useState(true)
   const [authBusy, setAuthBusy] = useState(false)
   const [authError, setAuthError] = useState('')
@@ -129,7 +131,7 @@ export function useDashboardState(): DashboardState {
         const nextProfile = data.profile ?? null
         setProfile(nextProfile)
         setProfileError('')
-        setShowProfilePrompt(!nextProfile)
+        setShowProfilePrompt(needsRolePrompt(nextProfile))
       } finally {
         if (active) setProfileLoading(false)
       }
@@ -282,10 +284,11 @@ export function useDashboardState(): DashboardState {
 
     setProfile(null)
     setShowProfilePrompt(false)
+    setShowProfileEdit(false)
     setProofs([])
   }
 
-  const handleProfileSave = async (firstName: string, lastName: string) => {
+  const handleProfileSave = async (firstName: string, lastName: string, jobRole: string | null) => {
     setProfileSaving(true)
     setProfileError('')
 
@@ -294,7 +297,7 @@ export function useDashboardState(): DashboardState {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ firstName, lastName }),
+      body: JSON.stringify({ firstName, lastName, jobRole }),
     })
 
     const data = await response.json()
@@ -309,11 +312,19 @@ export function useDashboardState(): DashboardState {
     const fullName = `${nextProfile.first_name} ${nextProfile.last_name}`.trim()
     setProfile(nextProfile)
     setShowProfilePrompt(false)
+    setShowProfileEdit(false)
     setProfileError('')
     setForm(currentForm => ({
       ...currentForm,
       name: fullName,
     }))
+
+    // The save just busted the stats cache server-side; pull the fresh leaderboard/feed
+    // so the role/name change appears without a manual reload (mirrors handleSubmit).
+    const statsResponse = await fetch('/api/stats', { cache: 'no-store' })
+    if (statsResponse.ok) {
+      setStats(await statsResponse.json())
+    }
   }
 
   const handleProofSelected = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -466,6 +477,9 @@ export function useDashboardState(): DashboardState {
     profileSaving,
     profileError,
     showProfilePrompt,
+    setShowProfilePrompt,
+    showProfileEdit,
+    setShowProfileEdit,
     authLoading,
     authBusy,
     authError,
