@@ -90,9 +90,9 @@ export default function DashboardSummary({
             <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: 1.5, fontWeight: 500, whiteSpace: 'nowrap' }}>That&apos;s equivalent to</div>
             {[
               { val: Math.floor(totalMiles / 26.2).toLocaleString(), label: 'marathons' },
-              { val: ((totalMiles / 24901) * 14).toFixed(1), label: 'laps of Earth' },
+              { val: (totalMiles / 24901).toFixed(1), label: 'laps of Earth' },
               { val: `${((totalMiles / 238855) * 100).toFixed(3)}%`, label: 'to the Moon' },
-              { val: Math.floor(totalMiles / 303).toLocaleString(), label: "Land's End → John o'Groats" },
+              { val: Math.floor(totalMiles / 874).toLocaleString(), label: "Land's End → John o'Groats" },
             ].map((equivalent, index) => (
               <div key={index} style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
                 <span style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 26, color: '#ED8B00' }}>{equivalent.val}</span>

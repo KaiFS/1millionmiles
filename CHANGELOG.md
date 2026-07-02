@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- "Laps of Earth" fun-fact on the homepage was inflated 14x by a stray `* 14` multiplier in the calculation — removed, so it now correctly reflects distance / Earth's circumference (24,901 mi).
+- "Land's End → John o'Groats" fun-fact used an inaccurate 303-mile distance constant; updated to 874 miles, the commonly cited road distance for the route.
+
 ## [0.8.0] - 2026-06-17
 
 ### Added
