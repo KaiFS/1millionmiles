@@ -75,7 +75,7 @@ export default function SubmitMilesModal({
                 <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Activity</label>
                 <select className="field" value={form.activity_type} onChange={event => onFieldChange('activity_type', event.target.value)}>
                   <option value="">Select activity...</option>
-                  {['Running', 'Walking', 'Cycling', 'Swimming', 'Hiking', 'Other'].map(activity => <option key={activity} value={activity}>{activity}</option>)}
+                  {['Running', 'Walking', 'Cycling', 'Rowing', 'Swimming', 'Hiking', 'Other'].map(activity => <option key={activity} value={activity}>{activity}</option>)}
                 </select>
               </div>
               <div>
