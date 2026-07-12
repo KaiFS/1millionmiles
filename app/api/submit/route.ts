@@ -4,8 +4,10 @@ import {
   convertToMiles,
   formatProofPath,
   isAllowedProofMimeType,
+  DUPLICATE_SUBMISSION_WINDOW_MINUTES,
   MAX_DISTANCE_MILES,
   MAX_PROOF_FILE_BYTES,
+  SUBMISSION_COOLDOWN_SECONDS,
   type DistanceUnit,
 } from '@/lib/challenge'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
@@ -53,6 +55,46 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid distance' }, { status: 400 })
   }
 
+  const roundedMiles = Math.round(distanceMiles * 100) / 100
+
+  let recentQuery = supabase
+    .from('miles_submissions')
+    .select('created_at, activity_type, distance_miles')
+    .order('created_at', { ascending: false })
+    .limit(1)
+
+  recentQuery = user
+    ? recentQuery.eq('user_id', user.id)
+    : recentQuery.is('user_id', null).eq('name', name)
+
+  const { data: lastSubmission, error: recentError } = await recentQuery.maybeSingle()
+
+  if (recentError) {
+    return NextResponse.json({ error: recentError.message }, { status: 500 })
+  }
+
+  if (lastSubmission) {
+    const ageMs = Date.now() - new Date(lastSubmission.created_at).getTime()
+
+    if (ageMs < SUBMISSION_COOLDOWN_SECONDS * 1000) {
+      return NextResponse.json(
+        { error: 'Your last submission was logged less than a minute ago. Please wait a moment before logging more miles.' },
+        { status: 429 },
+      )
+    }
+
+    if (
+      ageMs < DUPLICATE_SUBMISSION_WINDOW_MINUTES * 60_000 &&
+      lastSubmission.activity_type === activity_type &&
+      Number(lastSubmission.distance_miles) === roundedMiles
+    ) {
+      return NextResponse.json(
+        { error: `Those miles were already logged a few minutes ago. If this is a separate activity, please try again in ${DUPLICATE_SUBMISSION_WINDOW_MINUTES} minutes.` },
+        { status: 429 },
+      )
+    }
+  }
+
   let proofKey: string | null = null
   let proofUrl: string | null = null
   let proofUploadWarning: string | null = null
@@ -88,7 +130,7 @@ export async function POST(req: NextRequest) {
       user_id: user?.id ?? null,
       trust,
       activity_type,
-      distance_miles: Math.round(distanceMiles * 100) / 100,
+      distance_miles: roundedMiles,
     })
 
   if (error) {
