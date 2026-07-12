@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-07-12
+
+### Added
+- `robots.txt` (allows all crawlers, disallows `/api/`) and `sitemap.xml` listing `/`, `/about`, `/privacy`, and `/terms`, for search and AdSense crawler discovery.
+
+### Fixed
+- `/about` page title and heading reverted back to One Million Miles Challenge rather than the justgiving title
+
+### Changed
+- README rewritten as a project overview adding link to prod site, justgiving page etc
+
 ## [0.9.0] - 2026-07-12
 
 ### Added

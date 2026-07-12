@@ -3,20 +3,20 @@ import Link from 'next/link'
 import StaticPageShell from '@/app/_components/static-page-shell'
 
 export const metadata: Metadata = {
-  title: 'About | One Million, One Team',
+  title: 'About | The One Million Miles Challenge',
   description:
-    'The story behind One Million, One Team: staff from the Royal Brompton and Evelina London Paediatric Intensive Care Units raising funds for Evelina London Children’s Intensive Care Unit and the South Thames Retrieval Service.',
+    'The story behind The One Million Miles Challenge: staff from the Royal Brompton and Evelina London Paediatric Intensive Care Units raising funds for Evelina London Children’s Intensive Care Unit and the South Thames Retrieval Service.',
 }
 
 export default function AboutPage() {
   return (
-    <StaticPageShell title="About One Million, One Team">
+    <StaticPageShell title="About The One Million Miles Challenge">
       <p style={{ marginBottom: 16 }}>
         We are a newly united team. Staff from the Royal Brompton Paediatric Intensive Care Unit
         and Evelina London Paediatric Intensive Care Unit have come together on one site to
         provide the highest quality care for the babies, children and young people who require
         intensive care. We are celebrating this with an ambitious charity fundraising challenge:
-        One Million, One Team.
+        the One Million Miles Challenge, run under the campaign name &quot;One Million, One Team&quot;.
       </p>
       <p style={{ marginBottom: 16 }}>
         Our aim is to walk, run, cycle, row, ski, kayak, or cover distance by any self-propelled
