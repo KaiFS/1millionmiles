@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 
 import DashboardMainGrid from '@/app/_components/dashboard-main-grid'
 import DashboardNav from '@/app/_components/dashboard-nav'
@@ -9,21 +10,21 @@ import DashboardSummary from '@/app/_components/dashboard-summary'
 import ProofGallery from '@/app/_components/proof-gallery'
 import ProofModal from '@/app/_components/proof-modal'
 import SubmitMilesModal from '@/app/_components/submit-miles-modal'
-import PrivacyPolicyModal from '@/app/_components/privacy-policy-modal'
-import TermsOfServiceModal from '@/app/_components/terms-of-service-modal'
 import { useCountUp } from '@/app/_hooks/use-count-up'
 import { useDashboardState } from '@/app/_hooks/use-dashboard-state'
 import { getProviderDisplayName, splitDisplayName } from '@/lib/user-display'
-import React from 'react'
+import type { Stats } from '@/app/_lib/dashboard-types'
 
-export default function DashboardClient() {
-  const dashboard = useDashboardState()
+type DashboardClientProps = {
+  initialStats: Stats | null
+}
+
+export default function DashboardClient({ initialStats }: DashboardClientProps) {
+  const dashboard = useDashboardState(initialStats)
   const animatedMiles = useCountUp(dashboard.totalMiles, 2000)
   const signedIn = dashboard.isHydrated && Boolean(dashboard.user)
   const authBusy = dashboard.isHydrated ? dashboard.authBusy : false
   const authLoading = dashboard.isHydrated ? dashboard.authLoading : false
-  const [showPrivacyModal, setShowPrivacyModal] = React.useState(false)
-  const [showTermsModal, setShowTermsModal] = React.useState(false)
 
   // For a first-time user (no profile row yet) seed the modal from their Google name.
   const googleName = splitDisplayName(getProviderDisplayName(dashboard.user))
@@ -137,18 +138,15 @@ export default function DashboardClient() {
           >
             Donate via JustGiving →
           </a>
-          <span
-            style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}
-            onClick={() => setShowTermsModal(true)}
-          >
+          <Link href="/about" style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>
             About
-          </span>
-          <span
-            style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}
-            onClick={() => setShowPrivacyModal(true)}
-          >
+          </Link>
+          <Link href="/privacy" style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>
             Privacy
-          </span>
+          </Link>
+          <Link href="/terms" style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>
+            Terms
+          </Link>
           <span
             style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}
             onClick={() => window.open('mailto:kai.fs1996@gmail.com', '_blank')}
@@ -157,9 +155,6 @@ export default function DashboardClient() {
           </span>
         </div>
       </div>
-
-      <PrivacyPolicyModal open={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
-      <TermsOfServiceModal open={showTermsModal} onClose={() => setShowTermsModal(false)} />
 
       {dashboard.selectedProof && (
         <ProofModal proof={dashboard.selectedProof} onClose={() => dashboard.setSelectedProof(null)} />
