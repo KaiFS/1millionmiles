@@ -7,13 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-07-12
+
+### Added
+- Real, crawlable `/about`, `/privacy`, and `/terms` pages, replacing the JS-only Privacy Policy and Terms of Service modals.
+- Added an `/about` that tells the actual campaign story.
+- Shared `StaticPageShell` component (`app/_components/static-page-shell.tsx`) to provide consistent header/footer chrome for the new content pages.
+
+### Changed
+- Homepage leaderboard and activity feed are now server-rendered on first load instead of fetched entirely client-side, so the initial HTML contains real content rather than an empty loading shell.
+- Stats-fetching logic extracted from `/api/stats` into a shared server module (`app/_lib/get-stats.server.ts`), reused directly by the homepage server component and the API route.
+- Footer "About" (previously mislabeled and opening the Terms modal), "Privacy", and "Terms" links now navigate to the real pages instead of opening modals.
+
+### Removed
+- Privacy Policy and Terms of Service modal components, superseded by the dedicated pages.
+
 ## [0.8.1] - 2026-07-10
 
 ### Added
 - **Rowing** activity type in the submission form.
 
 ### Fixed
-- "Laps of Earth" fun-fact on the homepage was inflated 14x by a stray `* 14` multiplier in the calculation — removed, so it now correctly reflects distance / Earth's circumference (24,901 mi).
+- "Laps of Earth" fun-fact on the homepage was inflated 14x by a stray `* 14` multiplier in the calculation, now removed, so it correctly reflects distance / Earth's circumference (24,901 mi).
 - "Land's End → John o'Groats" fun-fact used an inaccurate 303-mile distance constant; updated to 874 miles, the commonly cited road distance for the route.
 
 ## [0.8.0] - 2026-06-17
@@ -40,9 +55,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Proof images now upload to Cloudflare R2 (zero egress fees) instead of Supabase Storage, dramatically reducing storage egress costs.
-- Public R2 URLs stored directly in `submission_proofs.storage_path` for new uploads — no signing required.
+- Public R2 URLs stored directly in `submission_proofs.storage_path` for new uploads, so no signing is required.
 - One-off migration script (`scripts/migrate-proofs-to-r2.ts`) to move existing proof images from Supabase Storage to R2.
-- Backwards-compatible URL detection in `/api/proofs` — old Supabase paths fall back to signed URLs during migration.
+- Backwards-compatible URL detection in `/api/proofs`: old Supabase paths fall back to signed URLs during migration.
 
 ### Fixed
 - Post-submit activity feed and stats now bypass the browser HTTP cache (`cache: 'no-store'`), so updates appear immediately after logging miles.
