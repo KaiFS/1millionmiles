@@ -1,6 +1,15 @@
 # The One Million Miles Challenge
 
-This is a Next.js 16 app for the One Million Miles Challenge, a charity fitness campaign supporting Evelina London.
+A charity fundraising and mileage-tracking app for staff of the Royal Brompton and Evelina
+London Paediatric Intensive Care Units, raising funds for the South Thames Retrieval Service
+and families of children on the unit.
+
+Live site: [1millionmiles.app](https://1millionmiles.app)
+Donate: [JustGiving page](https://www.justgiving.com/page/onemillion-oneteam?utm_medium=FR&utm_source=CL)
+
+## Tech stack
+
+Next.js 16, React 19, TypeScript, Supabase, Cloudflare R2, Vercel.
 
 ## Local Development
 
@@ -47,10 +56,9 @@ You need to complete the OAuth setup in Supabase and Google Cloud:
 
 ## Features
 
-- Public leaderboard with challenge progress, trust rankings, and recent activity.
-- Anonymous submissions for open participation.
+- Public leaderboard with challenge progress and recent activity.
 - Google sign-in for authenticated participants.
-- Profile-backed display names for signed-in users.
+- Profile-backed display names and job roles for signed-in users.
 - Optional screenshot proof uploads and an authenticated proof gallery.
 
 ## Verification
