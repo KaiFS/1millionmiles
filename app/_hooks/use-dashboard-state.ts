@@ -22,10 +22,10 @@ const DEFAULT_FORM: DashboardFormState = {
   distance_unit: 'MI',
 }
 
-export function useDashboardState(): DashboardState {
+export function useDashboardState(initialStats: Stats | null = null): DashboardState {
   const [isHydrated, setIsHydrated] = useState(false)
-  const [stats, setStats] = useState<Stats | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<Stats | null>(initialStats)
+  const [loading, setLoading] = useState(!initialStats)
   const [statsError, setStatsError] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [daysRemaining, setDaysRemaining] = useState(365)
