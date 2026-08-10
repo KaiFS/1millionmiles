@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-08-10
+
+### Added
+- Success screen now confirms both logged miles and the resulting personal total, for example
+- Stats and personal stats refresh when background tabs become visible again with throttling
+- `get_user_stats()` Postgres function, aggregating personal totals, rank and participant count in
+  the database.
+
+### Fixed
+- A failed refresh after a successful submission could leave the modal stuck on the success screen
+  forever, with the form unreset and the tally unchanged. The reset and close now always run, and the
+  user is told if the display could not refresh. 
+- A lost or unreadable response to the submission request could leave the button stuck on
+  "Submitting..." while the miles had in fact been saved, inviting a duplicate submission. Network
+  and parse failures are now distinguished and reported properly
+- The post-submit stats refetch could not bypass the Vercel edge cache, so the total, leaderboard and
+  activity feed could lag up to 15 minutes behind a submission. The submitter's refetch now bypasses
+  it, while normal page loads still use the cache.
+- Submissions are rejected with a clear "session expired" message when the server has no valid
+  session, instead of being written with no owner. An unowned row counts towards the global total but
+  never towards a personal tally or the leaderboard, which reads to a user as miles not counting.
+
+### Changed
+- `/api/me/stats` calls `get_user_stats()` instead of reading every submission row to compute three
+  numbers, cutting that request from roughly 76 KB egress to roughly 100 bytes.
+- Signing in is now required for every submission, at both the API and row-level-security layers. The
+  anonymous insert policy has been removed and no row can be written without an owner.
+- Submission modal no longer carries the unreachable not-signed-in variants of the name field and
+  proof upload notice.
+
 ## [0.9.1] - 2026-07-12
 
 ### Added
