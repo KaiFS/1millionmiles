@@ -8,12 +8,12 @@ type SubmitMilesModalProps = {
   form: DashboardFormState
   proofFile: File | null
   convertedMiles: number
-  signedIn: boolean
-  nameLocked: boolean
   submitting: boolean
   submitted: boolean
   submitWarning: string
   formError: string
+  creditedMiles: number | null
+  newPersonalTotal: number | null
   onClose: () => void
   onSubmit: () => void
   onProofSelected: (event: React.ChangeEvent<HTMLInputElement>) => void
@@ -24,17 +24,23 @@ export default function SubmitMilesModal({
   form,
   proofFile,
   convertedMiles,
-  signedIn,
-  nameLocked,
   submitting,
   submitted,
   submitWarning,
   formError,
+  creditedMiles,
+  newPersonalTotal,
   onClose,
   onSubmit,
   onProofSelected,
   onFieldChange,
 }: SubmitMilesModalProps) {
+  const creditedCopy = creditedMiles !== null
+    ? newPersonalTotal !== null
+      ? `+${creditedMiles.toFixed(1)} mi. You're now on ${newPersonalTotal.toFixed(1)} miles.`
+      : `+${creditedMiles.toFixed(1)} mi logged.`
+    : 'Thanks for contributing to the challenge.'
+
   return (
     <div className="overlay" onClick={event => { if (event.target === event.currentTarget) onClose() }}>
       <div className="card fade-in" style={{ width: '100%', maxWidth: 460, padding: 32, background: '#0d1424', border: '1px solid rgba(255,255,255,0.12)', maxHeight: '90vh', overflowY: 'auto' }}>
@@ -43,8 +49,13 @@ export default function SubmitMilesModal({
             <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
             <div style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: 30, letterSpacing: 2, marginBottom: 8 }}>Miles Logged!</div>
             <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 15 }}>
-              {submitWarning || 'Thanks for contributing to the challenge.'}
+              {creditedCopy}
             </div>
+            {submitWarning && (
+              <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, marginTop: 8 }}>
+                {submitWarning}
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -63,13 +74,11 @@ export default function SubmitMilesModal({
                   placeholder="e.g. Sarah Mitchell"
                   value={form.name}
                   onChange={event => onFieldChange('name', event.target.value)}
-                  readOnly={nameLocked}
+                  readOnly
                 />
-                {nameLocked && (
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', marginTop: 6 }}>
-                    Your signed-in profile name is used automatically on every submission.
-                  </div>
-                )}
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', marginTop: 6 }}>
+                  Your signed-in profile name is used automatically on every submission.
+                </div>
               </div>
               <div>
                 <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Activity</label>
@@ -106,30 +115,24 @@ export default function SubmitMilesModal({
                     : `Leaderboard totals stay in miles. ${KM_TO_MILES} miles per kilometre is the conversion.`}
                 </div>
               </div>
-              {signedIn ? (
-                <div>
-                  <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Proof Screenshot (Optional)</label>
-                  <input className="field" type="file" accept="image/jpeg,image/png,image/webp" onChange={onProofSelected} />
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', marginTop: 6 }}>
-                    Upload a screenshot from Strava, Garmin, Apple Fitness, or another tracker. PNG, JPG, or WEBP only, up to {formatFileSize(MAX_PROOF_SOURCE_FILE_BYTES)} before compression.
+              <div>
+                <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Proof Screenshot (Optional)</label>
+                <input className="field" type="file" accept="image/jpeg,image/png,image/webp" onChange={onProofSelected} />
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', marginTop: 6 }}>
+                  Upload a screenshot from Strava, Garmin, Apple Fitness, or another tracker. PNG, JPG, or WEBP only, up to {formatFileSize(MAX_PROOF_SOURCE_FILE_BYTES)} before compression.
+                </div>
+                {proofFile && (
+                  <div style={{ marginTop: 8, padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
+                    {proofFile.name} · upload size {formatFileSize(proofFile.size)}. Server limit is {formatFileSize(MAX_PROOF_FILE_BYTES)}.
                   </div>
-                  {proofFile && (
-                    <div style={{ marginTop: 8, padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
-                      {proofFile.name} · upload size {formatFileSize(proofFile.size)}. Server limit is {formatFileSize(MAX_PROOF_FILE_BYTES)}.
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>
-                  Sign in with Google to attach an optional proof screenshot and browse the screenshot gallery.
-                </div>
-              )}
+                )}
+              </div>
               {formError && <div style={{ fontSize: 13, color: '#ff6b6b', padding: '8px 12px', background: 'rgba(255,107,107,0.1)', borderRadius: 6 }}>{formError}</div>}
               <button className="amber-btn" style={{ width: '100%', padding: 15, marginTop: 4 }} onClick={onSubmit} disabled={submitting}>
                 {submitting ? 'Submitting...' : 'Submit Miles →'}
               </button>
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', textAlign: 'center' }}>
-                Please sign in with Google to upload proof images. Strava integration coming soon.
+                Strava integration coming soon.
               </div>
             </div>
           </>

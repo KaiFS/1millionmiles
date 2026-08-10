@@ -64,6 +64,8 @@ export type DashboardState = {
   submitted: boolean
   submitWarning: string
   formError: string
+  creditedMiles: number | null
+  newPersonalTotal: number | null
   user: User | null
   profile: UserProfile | null
   profileLoading: boolean
