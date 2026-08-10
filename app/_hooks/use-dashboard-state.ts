@@ -1,5 +1,5 @@
 import type { ChangeEvent } from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import {
   ALLOWED_PROOF_MIME_TYPES,
@@ -35,6 +35,8 @@ export function useDashboardState(initialStats: Stats | null = null): DashboardS
   const [submitted, setSubmitted] = useState(false)
   const [submitWarning, setSubmitWarning] = useState('')
   const [formError, setFormError] = useState('')
+  const [creditedMiles, setCreditedMiles] = useState<number | null>(null)
+  const [newPersonalTotal, setNewPersonalTotal] = useState<number | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
@@ -51,6 +53,7 @@ export function useDashboardState(initialStats: Stats | null = null): DashboardS
   const [proofsLoading, setProofsLoading] = useState(false)
   const [proofRefreshKey, setProofRefreshKey] = useState(0)
   const [selectedProof, setSelectedProof] = useState<ProofItem | null>(null)
+  const lastFetchedAt = useRef(0)
 
   useEffect(() => {
     setIsHydrated(true)
@@ -73,6 +76,7 @@ export function useDashboardState(initialStats: Stats | null = null): DashboardS
         const data = await response.json()
         setStats(data)
         setStatsError(false)
+        lastFetchedAt.current = Date.now()
       } finally {
         if (active) setLoading(false)
       }
@@ -238,6 +242,53 @@ export function useDashboardState(initialStats: Stats | null = null): DashboardS
   }, [selectedProof])
 
   useEffect(() => {
+    const refetchIfStale = async () => {
+      if (Date.now() - lastFetchedAt.current < 60_000) return
+
+      lastFetchedAt.current = Date.now()
+
+      try {
+        const statsResponse = await fetch('/api/stats')
+        if (statsResponse.ok) {
+          setStats(await statsResponse.json())
+          setStatsError(false)
+        }
+      } catch {
+        // Ignore; the next throttled attempt will retry.
+      }
+
+      if (!user) return
+
+      try {
+        const meStatsResponse = await fetch('/api/me/stats')
+        if (meStatsResponse.ok) {
+          setPersonalStats(await meStatsResponse.json())
+        }
+      } catch {
+        // Ignore; the next throttled attempt will retry.
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void refetchIfStale()
+      }
+    }
+
+    const handleFocus = () => {
+      void refetchIfStale()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [user])
+
+  useEffect(() => {
     const suggestedName = getUserDisplayName(user, profile)
     if (!suggestedName) return
 
@@ -388,11 +439,6 @@ export function useDashboardState(initialStats: Stats | null = null): DashboardS
       return
     }
 
-    if (proofFile && !user) {
-      setFormError('Sign in with Google to upload proof screenshots.')
-      return
-    }
-
     const payload = new FormData()
     payload.set('name', form.name.trim())
     payload.set('activity_type', form.activity_type)
@@ -405,44 +451,79 @@ export function useDashboardState(initialStats: Stats | null = null): DashboardS
 
     setSubmitting(true)
 
-    const response = await fetch('/api/submit', {
-      method: 'POST',
-      body: payload,
-    })
+    let response: Response
 
-    const data = await response.json()
+    try {
+      response = await fetch('/api/submit', {
+        method: 'POST',
+        body: payload,
+      })
+    } catch {
+      setSubmitting(false)
+      setFormError('Could not reach the server. Please check your connection and try again.')
+      return
+    }
+
+    // Parsed separately from the request: an unreadable body on a 2xx still means the
+    // miles were saved, and reporting that as a failure invites a duplicate submission.
+    let data: { error?: string; warning?: string } | null = null
+
+    try {
+      data = await response.json()
+    } catch {
+      data = null
+    }
+
+    if (!response.ok) {
+      setSubmitting(false)
+      setFormError(data?.error ?? 'Something went wrong.')
+      return
+    }
+
+    const proofWarning = data?.warning ?? ''
+
     setSubmitting(false)
+    setSubmitWarning(proofWarning)
+    setCreditedMiles(convertedMiles)
+    setSubmitted(true)
 
-    if (response.ok) {
-      setSubmitWarning(data.warning ?? '')
-      setSubmitted(true)
-      const statsResponse = await fetch('/api/stats', { cache: 'no-store' })
+    try {
+      const statsResponse = await fetch(`/api/stats?t=${Date.now()}`, { cache: 'no-store' })
       if (statsResponse.ok) {
         setStats(await statsResponse.json())
       }
+      lastFetchedAt.current = Date.now()
+
       if (user) {
         const meStatsResponse = await fetch('/api/me/stats', { cache: 'no-store' })
         if (meStatsResponse.ok) {
-          setPersonalStats(await meStatsResponse.json())
+          const personal: PersonalStats = await meStatsResponse.json()
+          setPersonalStats(personal)
+          setNewPersonalTotal(personal.totalMiles)
+        } else {
+          setNewPersonalTotal(null)
+          setSubmitWarning([proofWarning, 'Your personal total could not refresh.'].filter(Boolean).join(' '))
         }
       }
-      setProofRefreshKey(current => current + 1)
 
+      setProofRefreshKey(current => current + 1)
+    } catch {
+      setNewPersonalTotal(null)
+      setSubmitWarning([proofWarning, 'The display could not refresh.'].filter(Boolean).join(' '))
+    } finally {
       setTimeout(() => {
         setShowForm(false)
         setSubmitted(false)
         setSubmitWarning('')
         setProofFile(null)
+        setCreditedMiles(null)
+        setNewPersonalTotal(null)
         setForm({
           ...DEFAULT_FORM,
           name: getUserDisplayName(user, profile),
         })
       }, 2500)
-
-      return
     }
-
-    setFormError(data.error ?? 'Something went wrong.')
   }
 
   const totalMiles = stats?.totalMiles ?? 0
@@ -471,6 +552,8 @@ export function useDashboardState(initialStats: Stats | null = null): DashboardS
     submitted,
     submitWarning,
     formError,
+    creditedMiles,
+    newPersonalTotal,
     user,
     profile,
     profileLoading,

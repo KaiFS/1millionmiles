@@ -165,12 +165,12 @@ export default function DashboardClient({ initialStats }: DashboardClientProps) 
           form={dashboard.form}
           proofFile={dashboard.proofFile}
           convertedMiles={dashboard.convertedMiles}
-          signedIn={signedIn}
-          nameLocked={signedIn}
           submitting={dashboard.submitting}
           submitted={dashboard.submitted}
           submitWarning={dashboard.submitWarning}
           formError={dashboard.formError}
+          creditedMiles={dashboard.creditedMiles}
+          newPersonalTotal={dashboard.newPersonalTotal}
           onClose={() => dashboard.setShowForm(false)}
           onSubmit={() => { void dashboard.handleSubmit() }}
           onProofSelected={dashboard.handleProofSelected}
