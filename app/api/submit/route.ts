@@ -15,7 +15,6 @@ import { deleteFromR2, uploadToR2 } from '@/lib/r2'
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const formData = await req.formData()
-  const providedName = String(formData.get('name') ?? '').trim()
   const trust = String(formData.get('trust') ?? 'NHS Staff').trim()
   const activity_type = String(formData.get('activity_type') ?? '').trim()
   const distance_miles = String(formData.get('distance_miles') ?? '')
@@ -27,23 +26,25 @@ export async function POST(req: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  let profile = null
 
-  if (user) {
-    const { data: profileData, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('first_name, last_name')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    if (profileError) {
-      return NextResponse.json({ error: profileError.message }, { status: 500 })
-    }
-
-    profile = profileData
+  if (!user) {
+    return NextResponse.json(
+      { error: 'Your session expired. Please sign in again so your miles count towards your total.' },
+      { status: 401 },
+    )
   }
 
-  const name = user ? getUserDisplayName(user, profile) : providedName
+  const { data: profile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('first_name, last_name')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (profileError) {
+    return NextResponse.json({ error: profileError.message }, { status: 500 })
+  }
+
+  const name = getUserDisplayName(user, profile)
 
   if (!name || !activity_type || !Number.isFinite(rawDistance)) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
@@ -58,10 +59,6 @@ export async function POST(req: NextRequest) {
   let proofUploadWarning: string | null = null
 
   if (proof instanceof File) {
-    if (!user) {
-      return NextResponse.json({ error: 'Sign in with Google to upload proof screenshots.' }, { status: 401 })
-    }
-
     if (!isAllowedProofMimeType(proof.type)) {
       return NextResponse.json({ error: 'Proof must be a PNG, JPG, or WEBP image.' }, { status: 400 })
     }
@@ -85,7 +82,7 @@ export async function POST(req: NextRequest) {
     .insert({
       id: submissionId,
       name,
-      user_id: user?.id ?? null,
+      user_id: user.id,
       trust,
       activity_type,
       distance_miles: Math.round(distanceMiles * 100) / 100,
@@ -100,20 +97,18 @@ export async function POST(req: NextRequest) {
   }
 
   if (proof instanceof File && proofUrl && proofKey) {
-    if (user) {
-      const { error: proofError } = await supabase.from('submission_proofs').insert({
-        submission_id: submissionId,
-        user_id: user.id,
-        storage_path: proofUrl,
-        mime_type: proof.type,
-        size_bytes: proof.size,
-      })
+    const { error: proofError } = await supabase.from('submission_proofs').insert({
+      submission_id: submissionId,
+      user_id: user.id,
+      storage_path: proofUrl,
+      mime_type: proof.type,
+      size_bytes: proof.size,
+    })
 
-      if (proofError) {
-        console.error('[submit] proof insert failed:', proofError.message, proofError.code, proofError.details)
-        proofUploadWarning = 'Miles were logged, but the proof screenshot could not be attached.'
-        await deleteFromR2(proofKey)
-      }
+    if (proofError) {
+      console.error('[submit] proof insert failed:', proofError.message, proofError.code, proofError.details)
+      proofUploadWarning = 'Miles were logged, but the proof screenshot could not be attached.'
+      await deleteFromR2(proofKey)
     }
   }
 

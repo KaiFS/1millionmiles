@@ -17,7 +17,7 @@ alter table public.user_profiles
 
 alter table public.user_profiles
   add column if not exists role_prompted_at timestamptz;
--- NO DEFAULT — existing rows get null, which triggers the one-time role prompt on next sign-in.
+-- NO DEFAULT: existing rows get null, which triggers the one-time role prompt on next sign-in.
 -- A DEFAULT now() would silently mark all existing users as already-prompted.
 
 -- Public leaderboard data
@@ -74,13 +74,9 @@ create policy "Anyone can read submissions"
   on public.miles_submissions for select
   using (true);
 
-create policy "Anonymous visitors can insert submissions"
-  on public.miles_submissions for insert to anon
-  with check (user_id is null);
-
 create policy "Authenticated users can insert submissions"
   on public.miles_submissions for insert to authenticated
-  with check (user_id is null or auth.uid() = user_id);
+  with check (auth.uid() = user_id);
 
 drop policy if exists "Authenticated users can read proofs" on public.submission_proofs;
 drop policy if exists "Authenticated users can insert own proofs" on public.submission_proofs;
@@ -224,6 +220,34 @@ as $$
 $$;
 
 grant execute on function public.get_dashboard_stats() to anon, authenticated;
+
+
+create or replace function public.get_user_stats()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  with user_totals as (
+    select user_id, sum(distance_miles)::numeric as miles
+    from public.miles_submissions
+    where user_id is not null
+    group by user_id
+  ),
+  me as (
+    select coalesce((select miles from user_totals where user_id = auth.uid()), 0) as miles
+  )
+  select jsonb_build_object(
+    'totalMiles', round((select miles from me), 1),
+    -- Matches the previous JS exactly: users strictly ahead of me, plus one.
+    'rank', (select count(*) from user_totals where miles > (select miles from me)) + 1,
+    'totalParticipants', (select count(*) from user_totals)
+  );
+$$;
+
+revoke execute on function public.get_user_stats() from public;
+grant execute on function public.get_user_stats() to authenticated;
 
 create or replace function public.set_user_profiles_updated_at()
 returns trigger
