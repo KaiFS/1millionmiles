@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Submission cooldown changed from 60s to 5s
+
 ## [0.10.0] - 2026-08-10
 
 ### Added
