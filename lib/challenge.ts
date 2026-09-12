@@ -2,7 +2,7 @@ export type DistanceUnit = 'MI' | 'KM'
 
 export const KM_TO_MILES = 0.621371
 export const MAX_DISTANCE_MILES = 200
-export const SUBMISSION_COOLDOWN_SECONDS = 60
+export const SUBMISSION_COOLDOWN_SECONDS = 5
 export const DUPLICATE_SUBMISSION_WINDOW_MINUTES = 10
 
 export const PROOF_BUCKET = 'activity-proofs'

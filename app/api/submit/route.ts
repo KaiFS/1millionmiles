@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     if (ageMs < SUBMISSION_COOLDOWN_SECONDS * 1000) {
       return NextResponse.json(
-        { error: 'Your last submission was logged less than a minute ago. Please wait a moment before logging more miles.' },
+        { error: 'Your last submission was logged moments ago. Please wait a moment before logging more miles.' },
         { status: 429 },
       )
     }
